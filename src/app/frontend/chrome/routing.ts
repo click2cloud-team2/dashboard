@@ -156,7 +156,7 @@ const routes: Routes = [
         loadChildren: 'tenantmanagement/module#TenantManagementModule',
       },
       {
-        path: 'overview',
+        path: 'tenantmonitoring',
         loadChildren: 'tenantmanagement/tenantmonitoring/module#TenantMonitoringModule',
 
       },
