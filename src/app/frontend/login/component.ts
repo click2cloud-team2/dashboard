@@ -138,6 +138,10 @@ export class LoginComponent implements OnInit {
   }
 
   getData(username:any) {
+    this.http_.get('/api/v1/users/'+username).subscribe(data=>{
+      console.log("getData fun "+JSON.stringify(data))
+      console.log("getData fun "+data)
+    })
     return this.http_.get('/api/v1/users/'+username, {responseType: 'json'})
   }
 
@@ -155,10 +159,16 @@ export class LoginComponent implements OnInit {
       case LoginModes.Kubeconfig:
         return {kubeConfig: this.kubeconfig_} as LoginSpec;
       case LoginModes.Token:
+
         return {token: this.token_} as LoginSpec;
       case LoginModes.Basic:
         this.responseData = await this.GetCurrentUserInformation(this.username_)
+        console.log("response pasword"+this.responseData.password)
+        console.log("this .pasword"+this.password_)
         if (this.responseData.password == this.password_){
+          console.log("password matched")
+
+          console.log("token passed \n"+this.responseData.token)
           return this.responseData as LoginSpec;
         }
         else{

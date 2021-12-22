@@ -16,9 +16,11 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -145,20 +147,22 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 
 	apiV1Ws.Route(
 		apiV1Ws.POST("/users").
-			To(apiHandler.handleCreateUser).
+			To(apiHandler.CreateUser).
 			Reads(models.User{}).
 			Writes(models.User{}))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/users").
-			To(apiHandler.handleGetAllUser).
+			To(apiHandler.GetAllUser).
 			Writes(models.User{}))
+	// get token for user
+	apiV1Ws.Route(
+		apiV1Ws.GET("/token/{username}").
+			To(apiHandler.GetUserToken).
+			Writes(models.Token{}))
+
 	apiV1Ws.Route(
 		apiV1Ws.GET("/users/{username}").
-			To(apiHandler.handleGetUser).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.PUT("/users/{userid}").
-			To(apiHandler.handleUpdateUser).
+			To(apiHandler.GetUser).
 			Writes(models.User{}))
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/users/{userid}").
@@ -612,7 +616,6 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/namespace/{name}/event").
 			To(apiHandler.handleGetNamespaceEvents).
 			Writes(common.EventList{}))
-
 	apiV1Ws.Route(
 		apiV1Ws.POST("/tenants/{tenant}/namespace"). // TODO
 								To(apiHandler.handleCreateNamespace).
@@ -4562,19 +4565,44 @@ func parseDataSelectPathParameter(request *restful.Request) *dataselect.DataSele
 	return dataselect.NewDataSelectQuery(paginationQuery, sortQuery, filterQuery, metricQuery)
 }
 
+// create connection with postgres db
+func createConnection() *sql.DB {
+	connStr := "host=192.168.1.243 port=5434 dbname=postgres user=postgres password=sonu123 sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// check the connection
+	err = db.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected!")
+	// return the connection
+	return db
+}
+
 // CreateUser create a user in the postgres db
-func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) CreateUser(w *restful.Request, r *restful.Response) {
+	// set the header to content type x-www-form-urlencoded
+	// Allow all origin to handle cors issue
 
 	// create an empty user of type models.User
 	var user models.User
 
+	// decode the json request to user
+	//err := json.NewDecoder(w.ReadEntity(&user))
 	err := w.ReadEntity(&user)
 	if err != nil {
 		log.Fatalf("Unable to decode the request body.  %v", err)
 	}
 
 	// call insert user function and pass the user
-	insertID := models.InsertUser(user)
+	insertID := insertUser(user)
 
 	// format a response object
 	res := response{
@@ -4583,17 +4611,34 @@ func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Re
 	}
 
 	// send the response
-	r.WriteHeaderAndEntity(http.StatusCreated, res)
+	d := r.ResponseWriter
+	d.Write([]byte(res.Message))
 }
 
 // GetUser will return a single user by its id
-func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetUserToken(w *restful.Request, r *restful.Response) {
+	// get the userid from the request params, key is "id"
+	username := w.PathParameter("username")
+	fmt.Printf("inside getUserToken \n")
+	// call the getUser function with user id to retrieve a single user
+	//id_, err := strconv.Atoi(id)
+	user, err := getToken(username)
+
+	//fmt.Printf("inside getUserToken \n"+user)
+	if err != nil {
+		log.Fatalf("Unable to get user. %v", err)
+	}
+
+	r.WriteHeaderAndEntity(http.StatusOK, user)
+}
+
+func (apiHandler *APIHandler) GetUser(w *restful.Request, r *restful.Response) {
 	// get the userid from the request params, key is "id"
 	username := w.PathParameter("username")
 
 	// call the getUser function with user id to retrieve a single user
 	//id_, err := strconv.Atoi(id)
-	user, err := models.GetUser(username)
+	user, err := getUser(username)
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
@@ -4603,9 +4648,9 @@ func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Respo
 }
 
 // GetAllUser will return all the users
-func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetAllUser(w *restful.Request, r *restful.Response) {
 	// get all the users in the db
-	users, err := models.GetAllUsers()
+	users, err := getAllUsers()
 
 	if err != nil {
 		log.Fatalf("Unable to get all user. %v", err)
@@ -4615,35 +4660,59 @@ func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, users)
 }
 
-// handleUpdateUser update user's detail in the postgres db
-func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Response) {
+// UpdateUser update user's detail in the postgres db
+//func (apiHandler *APIHandler) UpdateUser(w *restful.Request, r *restful.Response) {
+//
+// // get the userid from the request params, key is "id"
+//
+// // convert the id type from string to int
+// username := w.PathParameter("username")
+//
+// // create an empty user of type models.User
+// var user models.User
+//
+//
+// // call update user to update the user
+// updatedRows := updateUser(int64(id), user)
+//
+//  if err != nil {
+//    log.Fatalf("Unable to get user. %v", err)
+//  }
+//
+//
+//
+// // format the message string
+// msg := fmt.Sprintf("User updated successfully. Total rows/record affected %v", updatedRows)
+//
+// // format the response message
+// res := response{
+//   ID:      int64(id),
+//   Message: msg,
+// }
+//
+// // send the response
+// d:= r.ResponseWriter
+//  r.WriteHeaderAndEntity(http.StatusOK, user)
+//}
+
+func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
 
 	// get the userid from the request params, key is "userid"
-	// convert the id type from string to int
+
 	userid := w.PathParameter("userid")
+
+	// call the deleteUser, convert the int to int64
 	id, err := strconv.Atoi(userid)
-
-	if err != nil {
-		log.Fatalf("Unable to convert the string into int.  %v", err)
-	}
-	// create an empty user of type models.User
-	var user models.User
-	error := w.ReadEntity(&user)
-	if err != nil {
-		log.Fatalf("Unable to decode the request body.  %v", error)
-	}
-
-	// call update user function to update the user
-	updatedRows := models.UpdateUser(int64(id), user)
+	deletedRows := deleteUser(int64(id))
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
 	}
 
 	// format the message string
-	msg := fmt.Sprintf("User updated successfully. Total rows/record affected %v", updatedRows)
+	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
 
-	// format the response message
+	// format the reponse message
 	res := response{
 		ID:      int64(id),
 		Message: msg,
@@ -4653,30 +4722,264 @@ func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, res)
 }
 
-// DeleteUser delete user's detail in the postgres db
-func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
+//------------------------- handler functions ----------------
+// insert one user in the DB
+func getToken(username string) (string, error) {
 
-	// get the userid from the request params, key is "userid"
+	userSA := username + "-sa"
+	userCRB := username + "-crb"
 
-	userid := w.PathParameter("userid")
+	//create Service account
+	//cmdStr1 := "kubectl create serviceaccount sonu-admin1 -n kubernetes-dashboard"
+	cmdStr1 := "kubectl create serviceaccount " + userSA + " -n kube-system"
+	Output1, err1 := exec.Command("/bin/sh", "-c", cmdStr1).Output()
+	if err1 != nil {
+		fmt.Printf("problem found in service command %s \n", err1)
+	}
+	fmt.Printf("\n SA created  %s ", Output1)
 
-	// call the deleteUser, convert the int to int64
-	id, err := strconv.Atoi(userid)
-	deletedRows := models.DeleteUser(int64(id))
+	//create cluster role binding
+	//cmdStr2 := "kubectl create clusterrolebinding sonu-admin1 --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:sonu-admin1"
+	cmdStr2 := "kubectl create clusterrolebinding " + userCRB + " --clusterrole=cluster-admin --serviceaccount=kube-system:" + userSA
+	Output2, err2 := exec.Command("/bin/sh", "-c", cmdStr2).Output()
+	if err2 != nil {
+		fmt.Printf("Error found in CRB command %s \n", err2)
+	}
+	fmt.Printf("CRB created  %s \n", Output2)
+
+	// Token fetched
+	//cmdStr3 := "kubectl describe secrets -n kubernetes-dashboard $(kubectl -n kubernetes-dashboard get secret | awk '/sonu-admin1/{print $1}')| grep token: | awk '{print$2}'"
+	cmdStr3 := "kubectl describe secrets -n kube-system $(kubectl -n kube-system get secret | awk '/" + userSA + "/{print $1}')| grep token: | awk '{print$2}'"
+	Output3, err3 := exec.Command("/bin/sh", "-c", cmdStr3).Output()
+	if err3 != nil {
+		fmt.Printf("Error found in CRB command %s ", err3)
+	}
+	fmt.Printf("Your token is  %s \n", Output3)
+
+	return string(Output3), err3
+	//return "yes",err1
+}
+func insertUser(user models.User) int64 {
+
+	// create the postgres db connection
+	//user_token:= strings.Trim(getToken()," ")
+
+	db := createConnection()
+	//fmt.Printf("fetched token \n"+user_token)
+	// close the db connection
+	defer db.Close()
+
+	// create the insert sql query
+	// returning userid will return the id of the inserted user
+	sqlStatement := `INSERT INTO users (username, password, token, type) VALUES ($1, $2, $3, $4) RETURNING userid`
+	//sqlStatement := `INSERT INTO users (username, password, token, type, tenantname, serviceaccount, clusterrolebinding) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	// the inserted id will store in this id
+	var id int64
+
+	// execute the sql statement
+	// Scan function will save the insert id in the id
+	//err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type).Scan(&id)
+	err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type).Scan(&id)
 
 	if err != nil {
-		log.Fatalf("Unable to get user. %v", err)
+		log.Fatalf("Unable to execute the query. %v", err)
 	}
 
-	// format the message string
-	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
+	fmt.Printf("Inserted a single record %v", id)
+	//fmt.Printf("Inserted a single record ")
+	// return the inserted id
+	return id
+	//return 1
+}
 
-	// format the response message
-	res := response{
-		ID:      int64(id),
-		Message: msg,
+// get one user from the DB by its userid
+func getUser(param string) (models.User, error) {
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create a user of models.User type
+	var user models.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users WHERE username=$1`
+
+	// execute the sql statement
+	row := db.QueryRow(sqlStatement, param)
+
+	// unmarshal the row object to user
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return user, nil
+	case nil:
+		return user, nil
+	default:
+		log.Fatalf("Unable to scan the row. %v", err)
 	}
 
-	// send the response
-	r.WriteHeaderAndEntity(http.StatusOK, res)
+	// return empty user on error
+	return user, err
+}
+
+// get one user from the DB by its userid
+func getAllUsers() ([]models.User, error) {
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var users []models.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users`
+
+	// execute the sql statement
+	rows, err := db.Query(sqlStatement)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var user models.User
+
+		// unmarshal the row object to user
+		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+
+		// append the user in the users slice
+		users = append(users, user)
+
+	}
+
+	// return empty user on error
+	return users, err
+}
+
+// update user in the DB
+//func  updateUser(id int64, user models.User) int64 {
+//
+//  // create the postgres db connection
+//  db := createConnection()
+//
+//  // close the db connection
+//  defer db.Close()
+//
+//  // create the update sql query
+//  sqlStatement := `UPDATE users SET name=$2, password=$3, token=$4 WHERE userid=$1`
+//
+//  // execute the sql statement
+//  res, err := db.Exec(sqlStatement, id, user.Username, user.Password, user.Token)
+//
+//  if err != nil {
+//    log.Fatalf("Unable to execute the query. %v", err)
+//  }
+//
+//  // check how many rows affected
+//  rowsAffected, err := res.RowsAffected()
+//
+//  if err != nil {
+//    log.Fatalf("Error while checking the affected rows. %v", err)
+//  }
+//
+//  fmt.Printf("Total rows/record affected %v", rowsAffected)
+//
+//  return rowsAffected
+//}
+
+// delete user in the DB
+func deleteUserResource(username string) (string, error) {
+
+	userSA := username + "-sa"
+	userCRB := username + "-crb"
+
+	//delete Service account
+	//cmdStr1 := "kubectl create serviceaccount sonu-admin1 -n kubernetes-dashboard"
+	cmdStr1 := "kubectl delete serviceaccount " + userSA + " -n kube-system"
+	Output1, err1 := exec.Command("/bin/sh", "-c", cmdStr1).Output()
+	if err1 != nil {
+		fmt.Printf("problem found in service command %s \n", err1)
+	}
+	fmt.Printf("\n serviceaccount %s created  %s ", userSA, Output1)
+
+	//delete cluster role binding
+	//cmdStr2 := "kubectl create clusterrolebinding sonu-admin1 --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:sonu-admin1"
+	cmdStr2 := "kubectl delete clusterrolebinding " + userCRB
+	Output2, err2 := exec.Command("/bin/sh", "-c", cmdStr2).Output()
+	if err2 != nil {
+		fmt.Printf("Error found in CRB command %s \n", err2)
+	}
+	fmt.Printf("CRB %s deleted  %s \n", userCRB, Output2)
+
+	//delete tenant
+	//cmdStr2 := "kubectl create clusterrolebinding sonu-admin1 --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:sonu-admin1"
+	cmdStr3 := "kubectl delete tenant " + username
+	Output3, err3 := exec.Command("/bin/sh", "-c", cmdStr3).Output()
+	if err3 != nil {
+		fmt.Printf("Error found in CRB command %s \n", err3)
+	}
+	fmt.Printf("Tenant %s deleted  %s \n", username, Output3)
+
+	msg := "User Resource deleted..!"
+
+	return msg, err3
+	//return "yes",err1
+}
+
+func deleteUser(id int64) int64 {
+
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var user models.User
+	// fetch username to delete resource
+	sqlUserQuery := `SELECT * FROM users WHERE userid=$1`
+	row := db.QueryRow(sqlUserQuery, id)
+	row_err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+	if row_err != nil {
+		log.Fatalf("Unable to scan the row. %v", row_err)
+	}
+	fmt.Printf("calling delete resource...for user %s \n", user.Username)
+
+	del_resource, del_err := deleteUserResource(user.Username)
+	if del_err != nil {
+		log.Fatalf("Unable to delete..user resource %v", del_err)
+	}
+	fmt.Printf("deleted resource...%s \n", del_resource)
+	// create the delete sql query
+	sqlStatement := `DELETE FROM users WHERE userid=$1`
+
+	// execute the sql statement
+	res, err := db.Exec(sqlStatement, id)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// check how many rows affected
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		log.Fatalf("Error while checking the affected rows. %v", err)
+	}
+
+	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+	return rowsAffected
 }

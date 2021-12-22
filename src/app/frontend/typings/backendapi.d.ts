@@ -31,6 +31,7 @@ export interface ObjectMeta {
   annotations?: StringMap;
   creationTimestamp?: string;
   uid?: string;
+  user?: string;
 }
 
 export interface ResourceDetail {
@@ -1138,7 +1139,15 @@ export interface Tenant extends Resource {
 export interface TenantList extends ResourceList {
   tenants: Tenant[];
 }
-
 export interface TenantDetail extends ResourceDetail {
   phase: string;
+}
+
+// for users
+export interface User extends Resource {
+  phase: string;
+}
+
+export interface UserList extends ResourceList {
+  users: User[];
 }
