@@ -155,6 +155,7 @@ export class LoginComponent implements OnInit {
       case LoginModes.Kubeconfig:
         return {kubeConfig: this.kubeconfig_} as LoginSpec;
       case LoginModes.Token:
+
         return {token: this.token_} as LoginSpec;
       case LoginModes.Basic:
         this.responseData = await this.GetCurrentUserInformation(this.username_)

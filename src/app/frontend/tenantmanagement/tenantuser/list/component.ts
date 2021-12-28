@@ -14,14 +14,17 @@
 
 import {Component,Input, OnInit,Inject} from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-export interface Elements {
+// import for IAM service
+import {UserApi} from "./userapi.service"
+import {VerberService} from "/root/dashboard/src/app/frontend/common/services/global/verber"
 
-  User: string;
-  Tenant: string;
-  Phase: string;
-  Age: string;
+export interface UserElement {
+  ID      :number;
+  Username :string ;
+  Type     :string ;
 }
-const ELEMENT_DATA: Elements[]=[];
+const USER_DATA: UserElement[]=[];
+
 @Component({
   selector: 'kd-tenantusers-list',
   templateUrl: './template.html',
@@ -32,28 +35,42 @@ export class TenantUsersListComponent implements OnInit{
 
   public userArray:any[] = [];
   dataSource:any;
-  constructor(private http: HttpClient){
+  displayName:any="";
+  typeMeta:any="";
+  objectMeta:any;
+
+  constructor(
+    private verber_:VerberService,
+    private userAPI_:UserApi,
+    private http: HttpClient){
   }
   ngOnInit(): void {
-    this.http.get('../assets/auth.csv', {responseType: 'text'})
-      .subscribe(
-        data => {
-          let csvToRowArray = data.split("\n");
-          for (let index = 1; index < csvToRowArray.length - 1; index++) {
-            let row = csvToRowArray[index].split(",");
-            this.userArray.push(row);
-          }
-          for(var i=0;i<this.userArray.length;i++)
-          {
-            ELEMENT_DATA.push({User:this.userArray[i][1],Tenant:this.userArray[i][4],Phase:this.userArray[i][5],Age:this.userArray[i][6]});
-          }
-          this.dataSource=ELEMENT_DATA
-          console.log(ELEMENT_DATA)
-        },
-        error => {
-          console.log(error);
+    this.userAPI_.allUsers().subscribe(data=>{
+      for (let index = 0; index < data.length; index++) {
+        let row = data[index];
+        this.userArray.push(row);
+
+        for(var i=0;i<this.userArray.length;i++)
+        {
+          USER_DATA.push({ID:this.userArray[i][0], Username:this.userArray[i][1],Type:this.userArray[i][4]});
         }
-      );
+        this.dataSource=USER_DATA
+      }
+    });
   }
 
+  onClick(): void {
+    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
+  }
+  editUser(username:string): void {
+    this.displayName=username
+    this.verber_.showUserEditDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
+  }
+  deleteUser(userID:string): void {
+    //console.log("Things to delete "+userID+" user"+username)
+    //   this.userAPI_.deleteTenant(username);
+    this.userAPI_.deleteUser(userID).subscribe(result=>{
+      console.log("result from delete"+result)
+    });
+  }
 }

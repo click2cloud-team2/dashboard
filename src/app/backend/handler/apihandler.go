@@ -16,8 +16,10 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
+	//"os/exec"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,6 +35,7 @@ import (
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/configmap"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/container"
@@ -55,6 +58,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/replicaset"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/replicationcontroller"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/role"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/rolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/secret"
 	resourceService "github.com/kubernetes/dashboard/src/app/backend/resource/service"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/serviceaccount"
@@ -145,20 +149,17 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 
 	apiV1Ws.Route(
 		apiV1Ws.POST("/users").
-			To(apiHandler.handleCreateUser).
+			To(apiHandler.CreateUser).
 			Reads(models.User{}).
 			Writes(models.User{}))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/users").
-			To(apiHandler.handleGetAllUser).
+			To(apiHandler.GetAllUser).
 			Writes(models.User{}))
+
 	apiV1Ws.Route(
 		apiV1Ws.GET("/users/{username}").
-			To(apiHandler.handleGetUser).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.PUT("/users/{userid}").
-			To(apiHandler.handleUpdateUser).
+			To(apiHandler.GetUser).
 			Writes(models.User{}))
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/users/{userid}").
@@ -612,7 +613,6 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/namespace/{name}/event").
 			To(apiHandler.handleGetNamespaceEvents).
 			Writes(common.EventList{}))
-
 	apiV1Ws.Route(
 		apiV1Ws.POST("/tenants/{tenant}/namespace"). // TODO
 								To(apiHandler.handleCreateNamespace).
@@ -642,7 +642,8 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.GET("/secret/{namespace}/{name}").
 			To(apiHandler.handleGetSecretDetail).
-			Writes(secret.SecretDetail{}))
+			//Writes(secret.SecretDetail{}))
+			Writes(secret.MySecret{}))
 	apiV1Ws.Route(
 		apiV1Ws.POST("/secret").
 			To(apiHandler.handleCreateImagePullSecret).
@@ -839,13 +840,24 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.PUT("/tenants/{tenant}/_raw/{kind}/namespace/{namespace}/name/{name}").
 			To(apiHandler.handlePutResourceWithMultiTenancy))
-
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/_raw/{kind}/name/{name}").
 			To(apiHandler.handleDeleteResource))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/_raw/{kind}/name/{name}").
 			To(apiHandler.handleGetResource))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/rolebindings").
+			To(apiHandler.handleCreateRoleBinding).
+			Reads(rolebinding.RoleBinding{}).
+			Writes(rolebinding.RoleBinding{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.POST("/clusterrolebindings").
+			To(apiHandler.handleCreateClusterRoleBinding).
+			Reads(clusterrolebinding.ClusterRoleBinding{}).
+			Writes(clusterrolebinding.ClusterRoleBinding{}))
+
 	apiV1Ws.Route(
 		apiV1Ws.PUT("/_raw/{kind}/name/{name}").
 			To(apiHandler.handlePutResource))
@@ -2762,6 +2774,43 @@ func (apiHandler *APIHandler) handleGetRoles(request *restful.Request, response 
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
+func (apiHandler *APIHandler) handleCreateRoleBinding(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	roleBindingSpec := new(rolebinding.RoleBindingSpec)
+	if err := request.ReadEntity(roleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := rolebinding.CreateRoleBinding(roleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, roleBindingSpec)
+}
+
+func (apiHandler *APIHandler) handleCreateClusterRoleBinding(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterRoleBindingSpec := new(clusterrolebinding.ClusterRoleBindingSpec)
+	if err := request.ReadEntity(clusterRoleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := clusterrolebinding.CreateClusterRoleBinding(clusterRoleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleBindingSpec)
+}
 
 func (apiHandler *APIHandler) handleGetRoleDetail(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
@@ -4562,19 +4611,44 @@ func parseDataSelectPathParameter(request *restful.Request) *dataselect.DataSele
 	return dataselect.NewDataSelectQuery(paginationQuery, sortQuery, filterQuery, metricQuery)
 }
 
+// create connection with postgres db
+func createConnection() *sql.DB {
+	connStr := "host=192.168.1.243 port=5434 dbname=postgres user=postgres password=sonu123 sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// check the connection
+	err = db.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected!")
+	// return the connection
+	return db
+}
+
 // CreateUser create a user in the postgres db
-func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) CreateUser(w *restful.Request, r *restful.Response) {
+	// set the header to content type x-www-form-urlencoded
+	// Allow all origin to handle cors issue
 
 	// create an empty user of type models.User
 	var user models.User
 
+	// decode the json request to user
+	//err := json.NewDecoder(w.ReadEntity(&user))
 	err := w.ReadEntity(&user)
 	if err != nil {
 		log.Fatalf("Unable to decode the request body.  %v", err)
 	}
 
 	// call insert user function and pass the user
-	insertID := models.InsertUser(user)
+	insertID := insertUser(user)
 
 	// format a response object
 	res := response{
@@ -4583,17 +4657,16 @@ func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Re
 	}
 
 	// send the response
-	r.WriteHeaderAndEntity(http.StatusCreated, res)
+	d := r.ResponseWriter
+	d.Write([]byte(res.Message))
 }
 
-// GetUser will return a single user by its id
-func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetUser(w *restful.Request, r *restful.Response) {
 	// get the userid from the request params, key is "id"
 	username := w.PathParameter("username")
 
 	// call the getUser function with user id to retrieve a single user
-	//id_, err := strconv.Atoi(id)
-	user, err := models.GetUser(username)
+	user, err := getUser(username)
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
@@ -4603,9 +4676,9 @@ func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Respo
 }
 
 // GetAllUser will return all the users
-func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetAllUser(w *restful.Request, r *restful.Response) {
 	// get all the users in the db
-	users, err := models.GetAllUsers()
+	users, err := getAllUsers()
 
 	if err != nil {
 		log.Fatalf("Unable to get all user. %v", err)
@@ -4615,35 +4688,24 @@ func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, users)
 }
 
-// handleUpdateUser update user's detail in the postgres db
-func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
 
 	// get the userid from the request params, key is "userid"
-	// convert the id type from string to int
+
 	userid := w.PathParameter("userid")
+
+	// call the deleteUser, convert the int to int64
 	id, err := strconv.Atoi(userid)
-
-	if err != nil {
-		log.Fatalf("Unable to convert the string into int.  %v", err)
-	}
-	// create an empty user of type models.User
-	var user models.User
-	error := w.ReadEntity(&user)
-	if err != nil {
-		log.Fatalf("Unable to decode the request body.  %v", error)
-	}
-
-	// call update user function to update the user
-	updatedRows := models.UpdateUser(int64(id), user)
+	deletedRows := deleteUser(int64(id))
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
 	}
 
 	// format the message string
-	msg := fmt.Sprintf("User updated successfully. Total rows/record affected %v", updatedRows)
+	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
 
-	// format the response message
+	// format the reponse message
 	res := response{
 		ID:      int64(id),
 		Message: msg,
@@ -4653,30 +4715,140 @@ func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, res)
 }
 
-// DeleteUser delete user's detail in the postgres db
-func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
+//------------------------- handler functions ----------------
+// insert one user in the DB
 
-	// get the userid from the request params, key is "userid"
+func insertUser(user models.User) int64 {
 
-	userid := w.PathParameter("userid")
+	// create the postgres db connection
 
-	// call the deleteUser, convert the int to int64
-	id, err := strconv.Atoi(userid)
-	deletedRows := models.DeleteUser(int64(id))
+	db := createConnection()
+	//fmt.Printf("fetched token \n"+user_token)
+	// close the db connection
+	defer db.Close()
+
+	// create the insert sql query
+	// returning userid will return the id of the inserted user
+	sqlStatement := `INSERT INTO users (username, password, token, type) VALUES ($1, $2, $3, $4) RETURNING userid`
+	// the inserted id will store in this id
+	var id int64
+
+	// execute the sql statement
+	// Scan function will save the insert id in the id
+	err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type).Scan(&id)
 
 	if err != nil {
-		log.Fatalf("Unable to get user. %v", err)
+		log.Fatalf("Unable to execute the query. %v", err)
 	}
 
-	// format the message string
-	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
+	fmt.Printf("Inserted a single record %v", id)
+	// return the inserted id
+	return id
+}
 
-	// format the response message
-	res := response{
-		ID:      int64(id),
-		Message: msg,
+// get one user from the DB by its userid
+func getUser(param string) (models.User, error) {
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create a user of models.User type
+	var user models.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users WHERE username=$1`
+
+	// execute the sql statement
+	row := db.QueryRow(sqlStatement, param)
+
+	// unmarshal the row object to user
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return user, nil
+	case nil:
+		return user, nil
+	default:
+		log.Fatalf("Unable to scan the row. %v", err)
 	}
 
-	// send the response
-	r.WriteHeaderAndEntity(http.StatusOK, res)
+	// return empty user on error
+	return user, err
+}
+
+// get one user from the DB by its userid
+func getAllUsers() ([]models.User, error) {
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var users []models.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users`
+
+	// execute the sql statement
+	rows, err := db.Query(sqlStatement)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var user models.User
+
+		// unmarshal the row object to user
+		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+
+		// append the user in the users slice
+		users = append(users, user)
+
+	}
+
+	// return empty user on error
+	return users, err
+}
+
+func deleteUser(id int64) int64 {
+
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create the delete sql query
+	sqlStatement := `DELETE FROM users WHERE userid=$1`
+
+	// execute the sql statement
+	res, err := db.Exec(sqlStatement, id)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// check how many rows affected
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		log.Fatalf("Error while checking the affected rows. %v", err)
+	}
+
+	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+	return rowsAffected
 }

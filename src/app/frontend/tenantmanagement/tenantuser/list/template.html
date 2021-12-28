@@ -1,3 +1,4 @@
+
 <style>
   td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type, th.mat-header-cell:first-of-type{
     padding: 20px !important;
@@ -11,28 +12,28 @@
     box-shadow: none !important;
   }
 </style>
-<kd-card role="table">
-  <div title
-       fxLayout="row"
-       i18n>Users</div>
-  <div description><span class="kd-muted-light"
-                         i18n>Items:3&nbsp;</span></div>
-  <div actions>
-    <kd-card-list-filter></kd-card-list-filter>
-  </div>
-  <div content>
-    <table style="width: 100%;" mat-table [dataSource]="dataSource" class="mat-elevation-z8 demo-table">
-      <ng-container [matColumnDef]="user"   *ngFor="let user of displayedColumns">
-        <th  mat-header-cell  *matHeaderCellDef> {{user}} </th>
-        <td mat-cell   *matCellDef="let element"> {{element[user]}} </td>
-      </ng-container>
+<div class="row"><div class="col-12 col-sm-12 col-md-12 col-lg-12"><div class="create_btn_sec" align="end"><button mat-raised-button matTooltip="Add Tenant" color="primary" (click)="onClick()"><img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
+  Create New User</button></div></div></div>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-    <mat-paginator [length]="1"
-                   [pageSize]="1"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"></mat-paginator>
-  </div>
-</kd-card>
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>User Name</th>
+    <th>Type</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let user of userArray">
+    <td>{{user.id}}</td>
+    <td>{{user.username}}</td>
+    <td>{{user.type}}</td>
+    <td>
+      <button (click)="deleteUser(user.ID)" disabled>Delete</button>
+      <!-- <button (click)="editUser(user.username)">Edit</button>            -->
+    </td>
+  </tr>
+  </tbody>
+</table>
+

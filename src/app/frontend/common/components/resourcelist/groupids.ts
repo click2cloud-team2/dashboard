@@ -37,6 +37,7 @@ export enum ListIdentifier {
   event = 'event',
   resource = 'resource',
   tenant = 'tenant',
+  user = 'user'
 }
 
 export enum ListGroupIdentifier {
