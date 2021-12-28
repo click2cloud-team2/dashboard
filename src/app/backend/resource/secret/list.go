@@ -16,8 +16,6 @@
 package secret
 
 import (
-	"log"
-
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
@@ -25,6 +23,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"log"
+	"time"
 )
 
 // SecretSpec is a common interface for the specification of different secrets.
@@ -65,6 +65,28 @@ func (spec *ImagePullSecretSpec) GetData() map[string][]byte {
 }
 
 // Secret is a single secret returned to the frontend.
+type MySecret struct {
+	ObjectMeta struct {
+		Name        string `json:"name"`
+		Namespace   string `json:"namespace"`
+		Annotations struct {
+			KubernetesIoServiceAccountName string `json:"kubernetes.io/service-account.name"`
+			KubernetesIoServiceAccountUID  string `json:"kubernetes.io/service-account.uid"`
+		} `json:"annotations"`
+		CreationTimestamp time.Time `json:"creationTimestamp"`
+		UID               string    `json:"uid"`
+	} `json:"objectMeta"`
+	TypeMeta struct {
+		Kind string `json:"kind"`
+	} `json:"typeMeta"`
+	Type string `json:"type"`
+	Data struct {
+		CaCrt     string `json:"ca.crt"`
+		Namespace string `json:"namespace"`
+		Token     string `json:"token"`
+	} `json:"data"`
+}
+
 type Secret struct {
 	ObjectMeta api.ObjectMeta `json:"objectMeta"`
 	TypeMeta   api.TypeMeta   `json:"typeMeta"`

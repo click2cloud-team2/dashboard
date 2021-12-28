@@ -66,10 +66,9 @@ export class TenantUsersListComponent implements OnInit{
     this.displayName=username
     this.verber_.showUserEditDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
   }
-  deleteUser(userID:string, username:string): void {
-
-    this.userAPI_.deleteTenant(username);
-
+  deleteUser(userID:string): void {
+    //console.log("Things to delete "+userID+" user"+username)
+    //   this.userAPI_.deleteTenant(username);
     this.userAPI_.deleteUser(userID).subscribe(result=>{
       console.log("result from delete"+result)
     });
