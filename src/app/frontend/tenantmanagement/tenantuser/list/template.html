@@ -1,39 +1,57 @@
+<div class="row">
+  <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+    <div class="create_btn_sec" align="end">
+      <button mat-raised-button matTooltip="Add Tenant" color="primary" (click)="onClick()">
+        <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
+        Create New User
+      </button>
+    </div>
+  </div>
+</div>
 
-<style>
-  td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type, th.mat-header-cell:first-of-type{
-    padding: 20px !important;
-    font-size: 15px !important;
-  }
-  td.mat-cell, td.mat-footer-cell, th.mat-header-cell{
-    padding: 20px !important;
-    font-size: 15px !important;
-  }
-  .kd-light-theme .mat-table{
-    box-shadow: none !important;
-  }
-</style>
-<div class="row"><div class="col-12 col-sm-12 col-md-12 col-lg-12"><div class="create_btn_sec" align="end"><button mat-raised-button matTooltip="Add Tenant" color="primary" (click)="onClick()"><img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
-  Create New User</button></div></div></div>
+<div class="list_container list_container3">
+  <mat-accordion>
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Images
+        </mat-panel-title>
+        <mat-panel-description>
+          <div class="panel_description">
+            <span>Items: </span>
+            {{total_users}}
+          </div>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
 
-<table class="table table-striped">
-  <thead>
-  <tr>
-    <th>ID</th>
-    <th>User Name</th>
-    <th>Type</th>
-    <th>Action</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr *ngFor="let user of userArray">
-    <td>{{user.id}}</td>
-    <td>{{user.username}}</td>
-    <td>{{user.type}}</td>
-    <td>
-      <button (click)="deleteUser(user.ID)" disabled>Delete</button>
-      <!-- <button (click)="editUser(user.username)">Edit</button>            -->
-    </td>
-  </tr>
-  </tbody>
-</table>
+      <mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
 
+        <!-- Owner Column -->
+        <ng-container matColumnDef="id">
+          <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Username </mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{element.username}}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Type Column -->
+        <ng-container matColumnDef="type">
+          <mat-header-cell *matHeaderCellDef> Type </mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.type}} </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="10" showFirstLastButtons
+                     aria-label="Select page of periodic elements">
+      </mat-paginator>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

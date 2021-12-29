@@ -361,21 +361,23 @@ export class CreateTenantDialog implements OnInit {
   // Get Secret name
   getSecretName() : string {
     this.http_.get("api/v1/secret/default").subscribe((data:any)=>{
-      var tsa=this.user.value
-      var searchSecret=tsa+"-token"
+      var serviceaccount=this.user.value
+      var searchSecret=serviceaccount+"-token"
       var queryStr = new RegExp(searchSecret,"gi");
-      let tarray:string=JSON.stringify(data).toString()
-      let ttt:string =tarray.split('"').toString().trim();
-      var tttarray = ttt.split(",")
-      for(var j=0; j< tttarray.length; j++){
-        var tstr:string = tttarray[j]
-        if(tstr.search(queryStr)!=-1)
+      let stringDataForm:string=JSON.stringify(data).toString()
+      let splitDataString:string =stringDataForm.split('"').toString().trim();
+      var splitArray = splitDataString.split(",")
+
+      for(var j=0; j< splitArray.length; j++){
+        var element:string = splitArray[j]
+        if(element.search(queryStr)!=-1)
         {
-          this.secretName=tstr
+          this.secretName=element
         }
       }
-      //call getTokenFromSecret method
+
       if(this.secretName!=""){
+        this.testname="Found"
         this.getTokenFromSecret(this.secretName)
       }
     });
@@ -385,16 +387,16 @@ export class CreateTenantDialog implements OnInit {
   getTokenFromSecret(secret_name:string) {
     let tokenUrl="api/v1/secret/default/"+secret_name
     this.http_.get(tokenUrl).subscribe((data : any )=>{
-      let array:string = JSON.stringify(data).toString()
-      let split_array:string[] =array.split(',');
+      let stringDataForm:string = JSON.stringify(data).toString()
+      let split_array:string[] =stringDataForm.split(',');
       let match_array:string[]=[];
-      split_array.forEach((d)=>{
-        var row:string = d.toString()
+      split_array.forEach((element)=>{
+        var row:string = element.toString()
         var re=/token/g
-        var res:string[]=[];
+        var restemp_result:string[]=[];
         if(row.search(re)!= -1){
-          res=row.split(':')
-          match_array.push(res.toString())
+          restemp_result=row.split(':')
+          match_array.push(restemp_result.toString())
         }
       })
       var values:string[] = match_array[2].split(',')

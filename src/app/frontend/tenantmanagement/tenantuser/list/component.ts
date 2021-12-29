@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component,Input, OnInit,Inject} from '@angular/core';
+import {Component,Input, OnInit,Inject, ViewChild} from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 // import for IAM service
 import {UserApi} from "./userapi.service"
 import {VerberService} from "/root/dashboard/src/app/frontend/common/services/global/verber"
+
+import {MatPaginator} from '@angular/material/paginator';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatSort} from '@angular/material/sort';
 
 export interface UserElement {
   ID      :number;
@@ -31,13 +35,17 @@ const USER_DATA: UserElement[]=[];
 })
 export class TenantUsersListComponent implements OnInit{
   tempData:any[]=[];
-  displayedColumns = ['User','Tenant','Phase','Age'];
+  displayedColumns = ['id','username','type'];
 
   public userArray:any[] = [];
-  dataSource:any;
   displayName:any="";
   typeMeta:any="";
   objectMeta:any;
+  dataSource: MatTableDataSource<any>;
+  total_users:number;
+
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private verber_:VerberService,
@@ -49,13 +57,11 @@ export class TenantUsersListComponent implements OnInit{
       for (let index = 0; index < data.length; index++) {
         let row = data[index];
         this.userArray.push(row);
-
-        for(var i=0;i<this.userArray.length;i++)
-        {
-          USER_DATA.push({ID:this.userArray[i][0], Username:this.userArray[i][1],Type:this.userArray[i][4]});
-        }
-        this.dataSource=USER_DATA
       }
+      this.dataSource = new MatTableDataSource(this.userArray);
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+      this.total_users=this.dataSource.data.length
     });
   }
 
