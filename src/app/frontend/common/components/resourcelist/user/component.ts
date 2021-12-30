@@ -79,4 +79,8 @@ export class UserListComponent extends ResourceListWithStatuses<UserList, User> 
   getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'phase', 'age'];
   }
+
+  getDisplayColumns2(): string[] {
+    return ['statusicon', 'name', 'phase', 'age'];
+  }
 }

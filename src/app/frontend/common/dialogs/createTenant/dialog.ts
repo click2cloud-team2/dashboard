@@ -17,31 +17,20 @@
 import {Component, OnInit, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {TenantService} from "../../services/global/tenant";
-import {NamespaceService} from "../../services/global/namespace";
-import {AppDeploymentContentSpec} from "@api/backendapi";
+
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
 
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup} from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
 import {AlertDialog, AlertDialogConfig} from "../alert/dialog";
 
-import {NamespacedResourceService} from '../../../common/services/resource/resource';
+import {NamespacedResourceService} from '../../services/resource/resource';
 import {SecretDetail} from '@api/backendapi';
-import {EndpointManager, Resource} from '../../../common/services/resource/endpoint';
-import {ActivatedRoute} from '@angular/router';
-import {Subscription} from 'rxjs/Subscription';
-
-import {ActionbarService, ResourceMeta} from '../../../common/services/global/actionbar';
-import {NotificationsService} from '../../../common/services/global/notifications';
 
 export interface UserToken {
   token: string;
-}
-export interface MySecret{
-  data:any;
 }
 
 export interface CreateTenantDialogMeta {
@@ -55,13 +44,13 @@ export interface CreateTenantDialogMeta {
 
 export class CreateTenantDialog implements OnInit {
   form1: FormGroup;
-  namespaceUsed : string = "default"
-  adminroleUsed : string = "cluster-admin";
+  namespaceUsed = "default"
+  adminroleUsed = "cluster-admin";
   apiGroups : string [] =["", "extensions", "apps"]
   resources : string [] =["deployments", "pods", "services", "secrets", "namespaces"]
   verbs :string []= ["*"]
-  public serviceAccountCreated:any[] = [];
-  public secretDetails:any[] = [];
+  serviceAccountCreated:any[] = [];
+  secretDetails:any[] = [];
 
   private readonly config_ = CONFIG;
 
@@ -69,7 +58,6 @@ export class CreateTenantDialog implements OnInit {
    * Max-length validation rule for tenant
    */
   tenantMaxLength = 24;
-  tokenMaxLength = 2000;
   storageidMaxLength =10;
   /**
    * Pattern validation rule for tenant
@@ -87,9 +75,10 @@ export class CreateTenantDialog implements OnInit {
 
   secret: SecretDetail;
   secret1: SecretDetail;
-  secretName:string =""
+  secretName =""
   secretToken:string;
   secretData: any[]=[];
+  testname="notFound"
 
   constructor(
     private readonly secret_: NamespacedResourceService<SecretDetail>,
@@ -140,7 +129,7 @@ export class CreateTenantDialog implements OnInit {
           ]),
         ],
 
-      }
+      },
     );
 
   }
@@ -361,15 +350,15 @@ export class CreateTenantDialog implements OnInit {
   // Get Secret name
   getSecretName() : string {
     this.http_.get("api/v1/secret/default").subscribe((data:any)=>{
-      var serviceaccount=this.user.value
-      var searchSecret=serviceaccount+"-token"
-      var queryStr = new RegExp(searchSecret,"gi");
-      let stringDataForm:string=JSON.stringify(data).toString()
-      let splitDataString:string =stringDataForm.split('"').toString().trim();
-      var splitArray = splitDataString.split(",")
+      const serviceaccount=this.user.value
+      const searchSecret=serviceaccount+"-token"
+      const queryStr = new RegExp(searchSecret,"gi");
+      const stringDataForm:string=JSON.stringify(data).toString()
+      const splitDataString:string =stringDataForm.split('"').toString().trim();
+      const splitArray = splitDataString.split(",")
 
-      for(var j=0; j< splitArray.length; j++){
-        var element:string = splitArray[j]
+      for(let j=0; j< splitArray.length; j++){
+        const element:string = splitArray[j]
         if(element.search(queryStr)!=-1)
         {
           this.secretName=element
@@ -385,23 +374,23 @@ export class CreateTenantDialog implements OnInit {
   }
 
   getTokenFromSecret(secret_name:string) {
-    let tokenUrl="api/v1/secret/default/"+secret_name
+    const tokenUrl="api/v1/secret/default/"+secret_name
     this.http_.get(tokenUrl).subscribe((data : any )=>{
-      let stringDataForm:string = JSON.stringify(data).toString()
-      let split_array:string[] =stringDataForm.split(',');
-      let match_array:string[]=[];
+      const stringDataForm:string = JSON.stringify(data).toString()
+      const split_array:string[] =stringDataForm.split(',');
+      const match_array:string[]=[];
       split_array.forEach((element)=>{
-        var row:string = element.toString()
-        var re=/token/g
-        var restemp_result:string[]=[];
+        const row:string = element.toString()
+        const re=/token/g
+        let restemp_result:string[]=[];
         if(row.search(re)!= -1){
           restemp_result=row.split(':')
           match_array.push(restemp_result.toString())
         }
       })
-      var values:string[] = match_array[2].split(',')
-      var token_value:string;
-      for(var j=0;j<values.length;j++)
+      const values:string[] = match_array[2].split(',')
+      let token_value:string;
+      for(let j=0;j<values.length;j++)
       {
         if(j==1)
         {
@@ -426,11 +415,11 @@ export class CreateTenantDialog implements OnInit {
       this.createClusteRole()
       this.createClusterRoleBinding()
     }
-    var t1:string=this.getSecretName()
-    var t1:string=this.getSecretName()
+    let t1:string=this.getSecretName()
+    const t1:string=this.getSecretName()
     if(t1=="")
     {
-      var t1:string=this.getSecretName()
+      const t1:string=this.getSecretName()
     }
   }
   isCreateDisabled(): boolean {
