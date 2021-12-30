@@ -65,8 +65,11 @@ export class TenantUsersListComponent implements OnInit {
     });
   }
 
+  // onClick(): void {
+  //   this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
+  // }
   onClick(): void {
-    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
+    this.verber_.showUserCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
   }
   deleteUser(userID:string): void {
     //console.log("Things to delete "+userID+" user"+username)

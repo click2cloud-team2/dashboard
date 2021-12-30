@@ -15,7 +15,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {Namespace, NamespaceList, Node, NodeList} from '@api/backendapi';
+import {Node, NodeList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 
 import {ResourceListWithStatuses} from '../../common/resources/list';

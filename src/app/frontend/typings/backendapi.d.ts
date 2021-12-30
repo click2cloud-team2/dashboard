@@ -32,7 +32,6 @@ export interface ObjectMeta {
   annotations?: StringMap;
   creationTimestamp?: string;
   uid?: string;
-  user?: string;
 }
 
 export interface ResourceDetail {
@@ -128,6 +127,7 @@ export interface JobList extends ResourceList {
 
 export interface NamespaceList extends ResourceList {
   namespaces: Namespace[];
+
 }
 
 export interface NodeList extends ResourceList {
@@ -194,14 +194,11 @@ export interface StorageClassList extends ResourceList {
 }
 
 // Simple detail types
-export interface ClusterRole extends Resource {
-}
+export interface ClusterRole extends Resource {}
 
-export interface Role extends Resource {
-}
+export interface Role extends Resource {}
 
-export interface ConfigMap extends Resource {
-}
+export interface ConfigMap extends Resource {}
 
 export interface Controller extends Resource {
   pods: PodInfo;
@@ -468,8 +465,7 @@ export interface SecretDetail extends ResourceDetail {
   data: StringMap;
 }
 
-export interface IngressDetail extends ResourceDetail {
-}
+export interface IngressDetail extends ResourceDetail {}
 
 export interface PersistentVolumeClaimDetail extends ResourceDetail {
   status: string;
@@ -1209,7 +1205,6 @@ export interface Role extends Resource {
 export interface TenantList extends ResourceList {
   tenants: Tenant[];
 }
-
 export interface ResourceQuotaList extends ResourceList {
   items: ResourceQuota[];
 }
@@ -1217,7 +1212,6 @@ export interface ResourceQuotaList extends ResourceList {
 export interface RoleList extends ResourceList {
   roles: Role[];
 }
-
 export interface TenantDetail extends ResourceDetail {
   phase: string;
 }

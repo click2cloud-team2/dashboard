@@ -21,7 +21,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
+	resourceService "github.com/kubernetes/dashboard/src/app/backend/resource/service"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/secret"
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/auth"
@@ -1187,40 +1188,40 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 }
 
 //for tenant handlerCreateTenant method
-func (apiHandler *APIHandler) handleCreateTenant(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleCreateTenant(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	tenantSpec := new(tenant.TenantSpec)
-	if err := request.ReadEntity(tenantSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := tenant.CreateTenant(tenantSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, tenantSpec)
-}
+// 	tenantSpec := new(tenant.TenantSpec)
+// 	if err := request.ReadEntity(tenantSpec); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	if err := tenant.CreateTenant(tenantSpec, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusCreated, tenantSpec)
+// }
 
 //for delete tenant
-func (apiHandler *APIHandler) handleDeleteTenant(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleDeleteTenant(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	tenantName := request.PathParameter("tenant")
-	if err := tenant.DeleteTenant(tenantName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
+// 	tenantName := request.PathParameter("tenant")
+// 	if err := tenant.DeleteTenant(tenantName, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeader(http.StatusOK)
+// }
 
 func (apiHandler *APIHandler) handleGetTenantList(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
@@ -2878,25 +2879,25 @@ func (apiHandler *APIHandler) handleGetReplicationControllerPodsWithMultiTenancy
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
-func (apiHandler *APIHandler) handleCreateClusterRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleCreateClusterRole(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	clusterRoleSpec := new(clusterrole.ClusterRoleSpec)
-	if err := request.ReadEntity(clusterRoleSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// 	clusterRoleSpec := new(clusterrole.ClusterRoleSpec)
+// 	if err := request.ReadEntity(clusterRoleSpec); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
-}
+// 	if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
+// }
 
 func (apiHandler *APIHandler) handleCreateClusterRolesWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
@@ -3058,79 +3059,79 @@ func (apiHandler *APIHandler) handleDeleteClusterRoleBindingsWithMultiTenancy(re
 	response.WriteHeader(http.StatusOK)
 }
 
-func (apiHandler *APIHandler) handleGetRoles(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleGetRoles(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	Namespace := request.PathParameter("namespace")
-	var namespaces []string
-	namespaces = append(namespaces, Namespace)
-	namespace := common.NewNamespaceQuery(namespaces)
-	dataSelect := parseDataSelectPathParameter(request)
+// 	Namespace := request.PathParameter("namespace")
+// 	var namespaces []string
+// 	namespaces = append(namespaces, Namespace)
+// 	namespace := common.NewNamespaceQuery(namespaces)
+// 	dataSelect := parseDataSelectPathParameter(request)
 
-	result, err := role.GetRoleList(k8sClient, namespace, dataSelect)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
+// 	result, err := role.GetRoleList(k8sClient, namespace, dataSelect)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusOK, result)
+// }
 
-func (apiHandler *APIHandler) handleGetRoleDetail(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleGetRoleDetail(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	name := request.PathParameter("name")
-	namespace := request.PathParameter("namespace")
-	result, err := role.GetRoleDetail(k8sClient, namespace, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
+// 	name := request.PathParameter("name")
+// 	namespace := request.PathParameter("namespace")
+// 	result, err := role.GetRoleDetail(k8sClient, namespace, name)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusOK, result)
+// }
 
-func (apiHandler *APIHandler) handleCreateRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleCreateRole(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	roleSpec := new(role.RoleSpec)
-	if err := request.ReadEntity(roleSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// 	roleSpec := new(role.RoleSpec)
+// 	if err := request.ReadEntity(roleSpec); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	if err := role.CreateRole(roleSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, roleSpec)
-}
+// 	if err := role.CreateRole(roleSpec, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusCreated, roleSpec)
+// }
 
-func (apiHandler *APIHandler) handleDeleteRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleDeleteRole(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	namespace := request.PathParameter("namespace")
-	roleName := request.PathParameter("role")
-	if err := role.DeleteRole(namespace, roleName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
+// 	namespace := request.PathParameter("namespace")
+// 	roleName := request.PathParameter("role")
+// 	if err := role.DeleteRole(namespace, roleName, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeader(http.StatusOK)
+// }
 
 func (apiHandler *APIHandler) handleGetRoleDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
@@ -3305,7 +3306,7 @@ func (apiHandler *APIHandler) handleCreateRoleBinding(request *restful.Request, 
 		errors.HandleInternalError(response, err)
 		return
 	}
-	if err := rolebinding.CreateRoleBinding(roleBindingSpec, k8sClient); err != nil {
+	if err := rolebinding.CreateRoleBindings(roleBindingSpec, k8sClient); err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
@@ -3324,7 +3325,7 @@ func (apiHandler *APIHandler) handleCreateClusterRoleBinding(request *restful.Re
 		errors.HandleInternalError(response, err)
 		return
 	}
-	if err := clusterrolebinding.CreateClusterRoleBinding(clusterRoleBindingSpec, k8sClient); err != nil {
+	if err := clusterrolebinding.CreateClusterRoleBindings(clusterRoleBindingSpec, k8sClient); err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
@@ -3423,58 +3424,58 @@ func (apiHandler *APIHandler) handleGetServiceAccountList(request *restful.Reque
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
-func (apiHandler *APIHandler) handleGetServiceAccountDetail(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleGetServiceAccountDetail(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	name := request.PathParameter("serviceaccount")
-	namespace := request.PathParameter("namespace")
-	result, err := serviceaccount.GetServiceAccountDetail(k8sClient, namespace, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
+// 	name := request.PathParameter("serviceaccount")
+// 	namespace := request.PathParameter("namespace")
+// 	result, err := serviceaccount.GetServiceAccountDetail(k8sClient, namespace, name)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusOK, result)
+// }
 
-func (apiHandler *APIHandler) handleCreateServiceAccount(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleCreateServiceAccount(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
-	if err := request.ReadEntity(serviceaccountSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// 	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
+// 	if err := request.ReadEntity(serviceaccountSpec); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	if err := serviceaccount.CreateServiceAccount(serviceaccountSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, serviceaccountSpec)
-}
+// 	if err := serviceaccount.CreateServiceAccount(serviceaccountSpec, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeaderAndEntity(http.StatusCreated, serviceaccountSpec)
+// }
 
-func (apiHandler *APIHandler) handleDeleteServiceAccount(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+// func (apiHandler *APIHandler) handleDeleteServiceAccount(request *restful.Request, response *restful.Response) {
+// 	k8sClient, err := apiHandler.cManager.Client(request)
+// 	if err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
 
-	serviceaccountName := request.PathParameter("serviceaccount")
-	namespaceName := request.PathParameter("namespace")
-	if err := serviceaccount.DeleteServiceAccount(namespaceName, serviceaccountName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
+// 	serviceaccountName := request.PathParameter("serviceaccount")
+// 	namespaceName := request.PathParameter("namespace")
+// 	if err := serviceaccount.DeleteServiceAccount(namespaceName, serviceaccountName, k8sClient); err != nil {
+// 		errors.HandleInternalError(response, err)
+// 		return
+// 	}
+// 	response.WriteHeader(http.StatusOK)
+// }
 
 func (apiHandler *APIHandler) handleGetServiceAccountListWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)

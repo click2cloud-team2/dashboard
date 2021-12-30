@@ -101,6 +101,7 @@ import {RoleListComponent} from "./resourcelist/role/component";
 import {ResourceQuotaListComponent} from "./quotas/component";
 //import {QuotasListComponent} from "./resourcelist/quota/component";
 import {NewNodeListComponent} from "./resourcelist/resourcemonitoring/component";
+import { TenantMonitoringComponent } from 'tenantmanagement/tenantmonitoring/component';
 
 
 const components = [
@@ -204,6 +205,8 @@ const components = [
   TenantListComponent,
 
   UserListComponent,
+
+  TenantMonitoringComponent,
 ];
 
 @NgModule({
