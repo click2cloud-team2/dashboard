@@ -433,7 +433,9 @@ export class CreateTenantDialog implements OnInit {
       var t1:string=this.getSecretName()
     }
   }
-
+  isCreateDisabled(): boolean {
+    return !this.user.value || !this.pass.value || !this.usertype.value;
+  }
   /**
    * Returns true if new tenant name hasn't been filled by the user, i.e, is empty.
    */
