@@ -16,9 +16,7 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuard} from '../common/services/guard/auth';
-import {SystemGuard} from '../common/services/guard/system';
 import {ChromeComponent} from './component';
-
 
 const routes: Routes = [
   {path: '', redirectTo: '/tenantmonitoring', pathMatch: 'full'},
@@ -39,7 +37,15 @@ const routes: Routes = [
       },
       {
         path: 'clusterrole',
-        loadChildren: 'resource/cluster/clusterrole/module#ClusterRoleModule',
+        loadChildren: 'tenantmanagement/clusterrole/module#ClusterRoleModule',
+      },
+      {
+        path: 'role',
+        loadChildren: 'tenantmanagement/role/module#RoleModule',
+      },
+      {
+        path: 'resourcequota',
+        loadChildren: 'tenantmanagement/resourcequota/module#ResourceQuotaModule',
       },
       {
         path: 'tenant',
@@ -55,6 +61,16 @@ const routes: Routes = [
         loadChildren: 'resource/cluster/node/module#NodeModule',
 
       },
+      {
+        path: 'partition',
+        loadChildren: 'resource/cluster/partition/module#PartitionModule',
+
+      },
+      {
+        path: 'tenantpartition',
+        loadChildren: 'resource/cluster/tenantpartition/module#TenantPartitionModule',
+
+      },
       // Overview
       {
         path: 'overview',
@@ -65,6 +81,11 @@ const routes: Routes = [
       {
         path: 'workloads',
         loadChildren: 'resource/workloads/module#WorkloadsModule',
+      },
+      {
+        path: 'namespace',
+        loadChildren: 'resource/workloads/namespace/module#NamespaceModule',
+
       },
       {
         path: 'cronjob',
@@ -97,6 +118,18 @@ const routes: Routes = [
       {
         path: 'statefulset',
         loadChildren: 'resource/workloads/statefulset/module#StatefulSetModule',
+      },
+      {
+        path: 'instance',
+        loadChildren: 'resource/virtualmachine/instance/module#InstanceModule',
+      },
+      {
+        path: 'image',
+        loadChildren: 'resource/virtualmachine/image/module#ImageModule',
+      },
+      {
+        path: 'keypair',
+        loadChildren: 'resource/virtualmachine/keypair/module#KeypairModule',
       },
 
       // Discovery and load balancing group
@@ -140,7 +173,10 @@ const routes: Routes = [
       },
 
       // Custom resource definitions
-      {path: 'customresourcedefinition', loadChildren: 'crd/module#CrdModule'},
+      {
+        path: 'customresourcedefinition',
+        loadChildren: 'crd/module#CrdModule'
+      },
 
       // Others
       {
@@ -165,16 +201,7 @@ const routes: Routes = [
         loadChildren: 'tenantmanagement/tenantnamespace/module#TenantNamespaceModule',
 
       },
-      {
-        path: 'tenantaccesscontrol',
-        loadChildren: 'tenantmanagement/tenantaccesscontrol/module#TenantAccessControlModule',
 
-      },
-      {
-        path: 'tenantquota',
-        loadChildren: 'tenantmanagement/tenantquota/module#TenantQuotaModule',
-
-      },
       {
         path: 'tenantuser',
         loadChildren: 'tenantmanagement/tenantuser/module#TenantUsersModule',
@@ -193,8 +220,6 @@ const routes: Routes = [
         path: 'shell',
         loadChildren: 'shell/module#ShellModule',
       },
-
-
       {
         path: 'search',
         loadChildren: 'search/module#SearchModule',

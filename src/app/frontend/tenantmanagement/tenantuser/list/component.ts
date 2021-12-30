@@ -16,7 +16,7 @@ import {Component,Input, OnInit,Inject, ViewChild} from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 // import for IAM service
 import {UserApi} from "./userapi.service"
-import {VerberService} from "/root/dashboard/src/app/frontend/common/services/global/verber"
+import {VerberService} from "../../../../frontend/common/services/global/verber"
 
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table';
@@ -33,44 +33,40 @@ const USER_DATA: UserElement[]=[];
   selector: 'kd-tenantusers-list',
   templateUrl: './template.html',
 })
-export class TenantUsersListComponent implements OnInit{
-  tempData:any[]=[];
-  displayedColumns = ['id','username','type'];
+export class TenantUsersListComponent implements OnInit {
+  tempData: any[] = [];
+  displayedColumns = ['id', 'username', 'type'];
 
-  public userArray:any[] = [];
-  displayName:any="";
-  typeMeta:any="";
-  objectMeta:any;
+  userArray: any[] = [];
+  displayName: any = "";
+  typeMeta: any = "";
+  objectMeta: any;
   dataSource: MatTableDataSource<any>;
-  total_users:number;
+  totalUsers: number;
 
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
+  @ViewChild(MatSort, {static: true}) sort: MatSort;
 
   constructor(
-    private verber_:VerberService,
+    private verber_: VerberService,
     private userAPI_:UserApi,
     private http: HttpClient){
   }
   ngOnInit(): void {
     this.userAPI_.allUsers().subscribe(data=>{
       for (let index = 0; index < data.length; index++) {
-        let row = data[index];
+        const row = data[index];
         this.userArray.push(row);
       }
       this.dataSource = new MatTableDataSource(this.userArray);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
-      this.total_users=this.dataSource.data.length
+      this.totalUsers = this.dataSource.data.length
     });
   }
 
   onClick(): void {
     this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
-  }
-  editUser(username:string): void {
-    this.displayName=username
-    this.verber_.showUserEditDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
   }
   deleteUser(userID:string): void {
     //console.log("Things to delete "+userID+" user"+username)

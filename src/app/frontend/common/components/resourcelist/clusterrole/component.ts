@@ -17,7 +17,6 @@ import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {ClusterRole, ClusterRoleList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListBase} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
@@ -32,8 +31,9 @@ import {VerberService} from '../../../services/global/verber';
 })
 export class ClusterRoleListComponent extends ResourceListBase<ClusterRoleList, ClusterRole> {
   @Input() endpoint = EndpointManager.resource(Resource.clusterRole, false, true).list();
-  typeMeta:any="";
-  objectMeta:any;
+  typeMeta: any;
+  objectMeta: any;
+
   constructor(
     private readonly verber_: VerberService,
     private readonly clusterRole_: ResourceService<ClusterRoleList>,
@@ -59,11 +59,11 @@ export class ClusterRoleListComponent extends ResourceListBase<ClusterRoleList, 
     return ['name', 'age'];
   }
 
-  onClick(): void {
-    this.verber_.showRoleCreateDialog('Role name',this.typeMeta,this.objectMeta);
+  getDisplayColumns2(): string[] {
+    return ['name', 'age'];
   }
 
-  onClick2(): void {
-    this.verber_.showClusterroleCreateDialog('Role name',this.typeMeta,this.objectMeta);
+  onClick(): void {
+    this.verber_.showClusterroleCreateDialog('Cluster Role name', this.typeMeta, this.objectMeta);
   }
 }

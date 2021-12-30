@@ -42,7 +42,11 @@ export enum Resource {
   event = 'event',
   container = 'container',
   tenant = 'tenant',
-  user = 'user'
+  user = 'user',
+  partition = 'partition',
+  resourcequota = 'resourcequota',
+  role = 'role',
+  tenantpartition = 'tenantpartition',
 }
 
 export enum Utility {
@@ -54,7 +58,8 @@ class ResourceEndpoint {
     private readonly resource_: Resource,
     private readonly namespaced_ = false,
     private readonly tenanted_ = false,
-  ) {}
+  ) {
+  }
 
   list(): string {
     return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${

@@ -62,9 +62,7 @@ import {PodStatusCardComponent} from './podstatus/component';
 import {PolicyRuleListComponent} from './policyrule/component';
 import {PropertyComponent} from './property/component';
 import {ProxyComponent} from './proxy/component';
-import {ResourceQuotaListComponent} from './quotas/component';
 import {ClusterRoleListComponent} from './resourcelist/clusterrole/component';
-import {RoleListComponent} from './resourcelist/role/component';
 import {ConfigMapListComponent} from './resourcelist/configmap/component';
 import {CRDListComponent} from './resourcelist/crd/component';
 import {CRDObjectListComponent} from './resourcelist/crdobject/component';
@@ -96,7 +94,12 @@ import {ZeroStateComponent} from './zerostate/component';
 import {TenantSelectorComponent} from './tenant/component';
 import {TenantListComponent} from './resourcelist/tenantlist/component';
 import {UserListComponent} from "./resourcelist/user/component";
-import {QuotasListComponent} from "./resourcelist/quota/component";
+import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
+import {PartitionListComponent} from "./resourcelist/partitionlist/component";
+import {TenantPartitionListComponent} from "./resourcelist/tenantpartitionlist/component";
+import {RoleListComponent} from "./resourcelist/role/component";
+import {ResourceQuotaListComponent} from "./quotas/component";
+//import {QuotasListComponent} from "./resourcelist/quota/component";
 import {NewNodeListComponent} from "./resourcelist/resourcemonitoring/component";
 
 
@@ -113,15 +116,13 @@ const components = [
   ActionbarDetailTriggerComponent,
   NewNodeListComponent,
   BreadcrumbsComponent,
-
-
+  TenantPartitionListComponent,
 
   CardComponent,
   CardListFilterComponent,
   ChipsComponent,
   CronJobListComponent,
   ClusterRoleListComponent,
-  RoleListComponent,
   ConfigMapListComponent,
   ColumnComponent,
   ChipDialog,
@@ -138,11 +139,9 @@ const components = [
   DateComponent,
   DeploymentListComponent,
   DefaultActionbar,
-
   EndpointListComponent,
   ExternalEndpointComponent,
   EventListComponent,
-
   HiddenPropertyComponent,
 
   IngressListComponent,
@@ -165,6 +164,7 @@ const components = [
 
   ObjectMetaComponent,
 
+  PartitionListComponent,
   PodStatusCardComponent,
   PropertyComponent,
   ProxyComponent,
@@ -174,11 +174,14 @@ const components = [
   PolicyRuleListComponent,
   PinDefaultActionbar,
 
-  ResourceQuotaListComponent,
+  ResourceQuotasListComponent,
   ResourceLimitListComponent,
   ReplicaSetListComponent,
   ReplicationControllerListComponent,
   RowDetailComponent,
+  RoleListComponent,
+  ResourceQuotaListComponent,
+
 
   StorageClassListComponent,
   StatefulSetListComponent,
@@ -201,7 +204,6 @@ const components = [
   TenantListComponent,
 
   UserListComponent,
-  QuotasListComponent,
 ];
 
 @NgModule({

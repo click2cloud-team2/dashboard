@@ -415,9 +415,9 @@ export class CreateTenantDialog implements OnInit {
       this.createClusteRole()
       this.createClusterRoleBinding()
     }
-    let t1:string=this.getSecretName()
-    const t1:string=this.getSecretName()
-    if(t1=="")
+    let temp:string=this.getSecretName()
+    temp=this.getSecretName()
+    if(temp.localeCompare("")===-1)
     {
       const t1:string=this.getSecretName()
     }

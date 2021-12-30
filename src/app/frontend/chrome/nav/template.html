@@ -26,13 +26,6 @@ limitations under the License.
       <mat-divider></mat-divider>
     </div>
 
-
-<!--    <div class="kd-nav-group">-->
-<!--      <kd-nav-item class="kd-nav-group-item" state="/overview" i18n>-->
-<!--      </kd-nav-item>-->
-<!--    </div>-->
-
-
     <mat-accordion>
       <mat-expansion-panel [expanded]="true" *ngIf="isCurrentSystem">
         <mat-expansion-panel-header>
@@ -48,7 +41,7 @@ limitations under the License.
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Tenants
           </kd-nav-item>
-          <kd-nav-item  class="kd-nav-item" state="/node" i18n>
+          <kd-nav-item class="kd-nav-item" state="/partition" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Cluster Monitoring
           </kd-nav-item>
@@ -56,7 +49,6 @@ limitations under the License.
         </div>
       </mat-expansion-panel>
     </mat-accordion>
-
 
     <mat-accordion>
       <mat-expansion-panel [expanded]="true" *ngIf="isSystem">
@@ -73,15 +65,17 @@ limitations under the License.
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Tenant Monitoring
           </kd-nav-item>
-          <kd-nav-item class="kd-nav-item" state="/tenantnamespace" i18n>
+
+          <kd-nav-item class="kd-nav-item" state="/role" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
-            Namespaces
+            Roles
           </kd-nav-item>
-          <kd-nav-item class="kd-nav-item" state="/tenantaccesscontrol" i18n>
+
+          <kd-nav-item class="kd-nav-item" state="/clusterrole" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
-            Access Control
+            Cluster roles
           </kd-nav-item>
-          <kd-nav-item class="kd-nav-item" state="/tenantquota" i18n>
+          <kd-nav-item class="kd-nav-item" state="/resourcequota" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Quota
           </kd-nav-item>
@@ -105,6 +99,10 @@ limitations under the License.
           </mat-panel-title>
         </mat-expansion-panel-header>
         <div class="kd-nav-group">
+          <kd-nav-item class="kd-nav-item" state="/namespace" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Namespaces
+          </kd-nav-item>
           <kd-nav-item class="kd-nav-item" state="/cronjob" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Cron Jobs
@@ -136,6 +134,34 @@ limitations under the License.
           <kd-nav-item class="kd-nav-item" state="/statefulset" i18n>
             <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
             Stateful Sets
+          </kd-nav-item>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+    <mat-divider></mat-divider>
+
+    <mat-accordion>
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <kd-nav-item class="kd-nav-group-item" i18n>
+              <img class="menu_icon" src="assets/images/discovery_load_balancing_icon.svg" alt="">
+              Virtual Machine
+            </kd-nav-item>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="kd-nav-group">
+          <kd-nav-item class="kd-nav-item" state="/instance" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Instances
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/image" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Images
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/keypair" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Key Pairs
           </kd-nav-item>
         </div>
       </mat-expansion-panel>

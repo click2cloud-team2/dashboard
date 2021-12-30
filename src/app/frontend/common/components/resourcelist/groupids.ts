@@ -37,6 +37,9 @@ export enum ListIdentifier {
   event = 'event',
   resource = 'resource',
   tenant = 'tenant',
+  resourcequota = 'resourcequota',
+  role = 'roleList',
+  tenantpartition = 'tenantpartition',
   user = 'user'
 }
 

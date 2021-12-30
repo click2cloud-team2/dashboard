@@ -1,28 +1,93 @@
-<form [formGroup]="form1">
-  <div class="row">
-    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-      <h2 mat-dialog-title>Create Quota</h2>
-    </div>
+<form [formGroup]="form1" style="overflow: scroll">
+
+  <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+    <h2 mat-dialog-title>Create a new Quota</h2>
+  </div>
+  <div class="tab_content first_tab_content" id="first_tab_content">
+
     <div class="col-12 col-sm-6 col-md-6 col-lg-6">
       <mat-form-field appearance="fill">
-        <mat-label>Enter Tenant </mat-label>
-        <input matInput type="text"   formControlName="tenant" required />
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Enter Namespace </mat-label>
-        <input matInput type="text"   formControlName="tenant" required />
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Enter pod </mat-label>
-        <input matInput type="text"   formControlName="tenant" required />
+        <mat-label>Name</mat-label>
+        <input matInput type="text" formControlName="quotaname" required/>
+        <mat-hint align="end"></mat-hint>
       </mat-form-field>
     </div>
 
-    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-      <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Cancel</button>
-        <button mat-button [mat-dialog-close]="true" type="submit" (click)="createTenant()">Update</button>
-      </mat-dialog-actions>
+    <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+      <mat-form-field appearance="fill">
+        <mat-label>Tenant</mat-label>
+        <input type="text" matInput formControlName="tenant" required/>
+      </mat-form-field>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+      <mat-form-field appearance="fill">
+        <mat-label>Namespace</mat-label>
+        <input type="text" matInput formControlName="namespace" required/>
+      </mat-form-field>
+    </div>
+
+    <h5 mat-dialog-title>Enter Object Count</h5>
+    <div class="row">
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Services</mat-label>
+          <input type="text" matInput formControlName="service"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Memory</mat-label>
+          <input type="text" matInput formControlName="memory"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>CPUs</mat-label>
+          <input type="text" matInput formControlName="cpu"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Pods</mat-label>
+          <input type="text" matInput formControlName="pod"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>PVC</mat-label>
+          <input type="text" matInput formControlName="pvc"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Config Maps</mat-label>
+          <input type="text" matInput formControlName="config_maps"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Secrets</mat-label>
+          <input type="text" matInput formControlName="secrets"/>
+        </mat-form-field>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Ephemeral Storage</mat-label>
+          <input type="text" matInput formControlName="ephemeral_storage"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+      </div>
+      <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+        <mat-dialog-actions align="end">
+          <button mat-button mat-dialog-close>Cancel</button>
+          <button mat-button [mat-dialog-close]="true" type="submit" (click)="createQuota()">
+            Create
+          </button>
+        </mat-dialog-actions>
+      </div>
     </div>
   </div>
 </form>
