@@ -1165,10 +1165,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/users").
 			To(apiHandler.GetAllUser).
 			Writes(model.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.GET("/tenantusers/{tenantname}").
-			To(apiHandler.GetAllTenantUsers).
-			Writes(model.User{}))
+
 	apiV1Ws.Route(
 		apiV1Ws.GET("/users/{username}").
 			To(apiHandler.GetUser).
@@ -5134,21 +5131,6 @@ func (apiHandler *APIHandler) GetAllUser(w *restful.Request, r *restful.Response
 	r.WriteHeaderAndEntity(http.StatusOK, users)
 }
 
-// GetAllTenantUser will return all the users
-func (apiHandler *APIHandler) GetAllTenantUsers(w *restful.Request, r *restful.Response) {
-	// get all the users in the db
-	tenantname := w.PathParameter("tenantname")
-
-	users, err := getTenantUsers(tenantname)
-
-	if err != nil {
-		log.Fatalf("Unable to get all user. %v", err)
-	}
-
-	// send all the users as response
-	r.WriteHeaderAndEntity(http.StatusOK, users)
-}
-
 func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
 
 	// get the userid from the request params, key is "userid"
@@ -5190,13 +5172,13 @@ func insertUser(user model.User) int64 {
 
 	// create the insert sql query
 	// returning userid will return the id of the inserted user
-	sqlStatement := `INSERT INTO users (username, password, token, type,tenantname) VALUES ($1, $2, $3, $4, $5) RETURNING userid`
+	sqlStatement := `INSERT INTO users (username, password, token, type) VALUES ($1, $2, $3, $4) RETURNING userid`
 	// the inserted id will store in this id
 	var id int64
 
 	// execute the sql statement
 	// Scan function will save the insert id in the id
-	err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type, user.Tenant).Scan(&id)
+	err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type).Scan(&id)
 
 	if err != nil {
 		log.Fatalf("Unable to execute the query. %v", err)
@@ -5225,7 +5207,7 @@ func getUser(param string) (model.User, error) {
 	row := db.QueryRow(sqlStatement, param)
 
 	// unmarshal the row object to user
-	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
 
 	switch err {
 	case sql.ErrNoRows:
@@ -5239,51 +5221,6 @@ func getUser(param string) (model.User, error) {
 
 	// return empty user on error
 	return user, err
-}
-
-// get one user from the DB by its userid
-func getTenantUsers(tenantname string) ([]model.User, error) {
-	// create the postgres db connection
-	db := CreateConnection()
-
-	// close the db connection
-	defer db.Close()
-
-	var users []model.User
-
-	// create the select sql query
-	//sqlStatement := `SELECT * FROM users WHERE type=$1`
-	sqlStatement := `SELECT * FROM users WHERE tenantname =$1`
-
-	// execute the sql statement
-	rows, err := db.Query(sqlStatement,tenantname)
-
-	if err != nil {
-		log.Fatalf("Unable to execute the query. %v", err)
-	}
-
-	// close the statement
-	defer rows.Close()
-
-	// iterate over the rows
-	for rows.Next() {
-		var user model.User
-
-		// unmarshal the row object to user
-		//err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
-		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
-
-		if err != nil {
-			log.Fatalf("Unable to scan the row. %v", err)
-		}
-
-		// append the user in the users slice
-		users = append(users, user)
-
-	}
-
-	// return empty user on error
-	return users, err
 }
 
 // get one user from the DB by its userid
@@ -5314,7 +5251,7 @@ func getAllUsers() ([]model.User, error) {
 		var user model.User
 
 		// unmarshal the row object to user
-		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
+		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
 
 		if err != nil {
 			log.Fatalf("Unable to scan the row. %v", err)
