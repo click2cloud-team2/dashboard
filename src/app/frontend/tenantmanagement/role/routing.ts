@@ -42,5 +42,4 @@ const ROLE_DETAIL_ROUTE: Route = {
   imports: [RouterModule.forChild([ROLE_LIST_ROUTE, ROLE_DETAIL_ROUTE, DEFAULT_ACTIONBAR])],
   exports: [RouterModule],
 })
-export class RoleRoutingModule {
-}
+export class RoleRoutingModule {}

@@ -31,8 +31,7 @@ export class ActionbarComponent implements OnInit {
 
   private _unsubscribe = new Subject<void>();
 
-  constructor(private readonly actionbar_: ActionbarService, private readonly router_: Router) {
-  }
+  constructor(private readonly actionbar_: ActionbarService, private readonly router_: Router) {}
 
   ngOnInit(): void {
     this.actionbar_.onInit

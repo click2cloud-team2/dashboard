@@ -42,7 +42,6 @@ export class TenantSelectorComponent implements OnInit {
   selectTenantInput = '';
   systemTenantName = CONFIG.systemTenantName;
 
-
   @ViewChild(MatSelect, {static: true}) private readonly select_: MatSelect;
   @ViewChild('tenantInput', {static: true}) private readonly tenantInputEl_: ElementRef;
 

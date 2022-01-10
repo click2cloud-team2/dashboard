@@ -4,8 +4,7 @@
       <div class="create_btn_sec" align="right">
         <button mat-raised-button matTooltip="Assign Quota" color="primary" (click)="onClick()">
           <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
-          Assign Quota
-        </button>
+          Assign Quota</button>
       </div>
     </div>
   </div>
@@ -37,8 +36,7 @@
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
-                               i18n>Name
-              </mat-header-cell>
+                               i18n>Name</mat-header-cell>
               <mat-cell *matCellDef="let resourcequota">
                 {{resourcequota.objectMeta.name}}
               </mat-cell>
@@ -49,8 +47,7 @@
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
-                               i18n>Namespace
-              </mat-header-cell>
+                               i18n>Namespace</mat-header-cell>
               <mat-cell *matCellDef="let resourcequota">
                 {{resourcequota.objectMeta.namespace}}
               </mat-cell>
@@ -60,8 +57,7 @@
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
-                               i18n>Age
-              </mat-header-cell>
+                               i18n>Age</mat-header-cell>
               <mat-cell *matCellDef="let resourcequota">
                 <kd-date [date]="resourcequota.objectMeta.creationTimestamp"
                          relative></kd-date>
@@ -72,11 +68,9 @@
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
-                               i18n>Status
-              </mat-header-cell>
+                               i18n>Status</mat-header-cell>
               <mat-cell *matCellDef="let resourcequota">
-                <ng-container *ngIf="resourcequota.statusList">{{resourcequota.statusList | json}}
-                </ng-container>
+                <ng-container *ngIf="resourcequota.statusList">{{resourcequota.statusList | json}}</ng-container>
                 <ng-container *ngIf="!resourcequota.statusList">-</ng-container>
               </mat-cell>
             </ng-container>

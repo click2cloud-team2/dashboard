@@ -35,5 +35,4 @@ const CRONJOB_LIST_ROUTE: Route = {
   ],
   exports: [RouterModule],
 })
-export class ImageRoutingModule {
-}
+export class ImageRoutingModule {}

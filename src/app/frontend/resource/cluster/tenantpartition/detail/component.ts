@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {HttpParams} from '@angular/common/http';
-import {ComponentFactoryResolver, Input, OnDestroy} from '@angular/core';
+import { ComponentFactoryResolver, Input, OnDestroy} from '@angular/core';
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Event, NodeDetail, Pod, PodList, TenantDetail} from '@api/backendapi';
@@ -47,7 +47,7 @@ export const emptyResourcesRatio: ResourcesRatio = {
   selector: 'kd-tenant-partition-detail',
   templateUrl: './template.html',
 })
-export class TenantPartitionDetailComponent implements OnInit, OnDestroy {
+export class TenantPartitionDetailComponent implements OnInit, OnDestroy  {
   private tenantSubscription_: Subscription;
   private readonly endpoint_ = EndpointManager.resource(Resource.tenant);
   node: NodeDetail;
@@ -56,7 +56,7 @@ export class TenantPartitionDetailComponent implements OnInit, OnDestroy {
   displayName: any = "";
   typeMeta: any = "";
   objectMeta: any = "";
-  podListEndpoint: string;
+  podListEndpoint:string;
 
   constructor(
     private readonly node_: ResourceService<NodeDetail>,
@@ -64,8 +64,7 @@ export class TenantPartitionDetailComponent implements OnInit, OnDestroy {
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
     private readonly notifications_: NotificationsService,
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
@@ -162,7 +161,6 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   protected getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
   }
-
   protected getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
   }

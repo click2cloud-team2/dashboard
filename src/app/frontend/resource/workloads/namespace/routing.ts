@@ -49,5 +49,4 @@ export const ACTIONBAR = {
   imports: [RouterModule.forChild([NAMESPACE_LIST_ROUTE, NAMESPACE_DETAIL_ROUTE, ACTIONBAR])],
   exports: [RouterModule],
 })
-export class NamespaceRoutingModule {
-}
+export class NamespaceRoutingModule {}

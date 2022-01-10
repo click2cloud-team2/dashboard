@@ -19,9 +19,9 @@ import {VerberService} from '../../../services/global/verber';
 })
 export class ResourceQuotasListComponent extends ResourceListWithStatuses<ResourceQuotaList, ResourceQuota> {
   @Input() endpoint = EndpointManager.resource(Resource.resourcequota, true, true).list();
-  displayName: any = "";
-  typeMeta: any = "";
-  objectMeta: any;
+  displayName:any="";
+  typeMeta:any="";
+  objectMeta:any;
 
   constructor(
     private readonly verber_: VerberService,
@@ -48,7 +48,7 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
   }
 
   map(resourcequotaList: ResourceQuotaList): ResourceQuota[] {
-    console.log("resourcequotaList", resourcequotaList)
+    console.log("resourcequotaList",resourcequotaList)
     return resourcequotaList.items;
   }
 

@@ -32,8 +32,8 @@ import {VerberService} from '../../../services/global/verber';
 })
 export class RoleListComponent extends ResourceListBase<RoleList, Role> {
   @Input() endpoint = EndpointManager.resource(Resource.role, true).list();
-  typeMeta: any;
-  objectMeta: any;
+  typeMeta:any;
+  objectMeta:any;
 
   constructor(
     private readonly role_: NamespacedResourceService<RoleList>,
@@ -72,6 +72,6 @@ export class RoleListComponent extends ResourceListBase<RoleList, Role> {
   }
 
   onClick(): void {
-    this.verber_.showRoleCreateDialog('Role name', this.typeMeta, this.objectMeta);
+    this.verber_.showRoleCreateDialog('Role name',this.typeMeta,this.objectMeta);
   }
 }

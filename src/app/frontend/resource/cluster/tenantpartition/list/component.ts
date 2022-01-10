@@ -19,9 +19,6 @@ import {Component, OnInit} from '@angular/core';
   template: '<kd-tenant-partition-list></kd-tenant-partition-list>',
 })
 export class TenantPartitionListComponent implements OnInit {
-  constructor() {
-  }
-
-  ngOnInit() {
-  }
+  constructor() {}
+  ngOnInit() {}
 }

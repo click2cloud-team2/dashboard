@@ -99,9 +99,6 @@ import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {TenantPartitionListComponent} from "./resourcelist/tenantpartitionlist/component";
 import {RoleListComponent} from "./resourcelist/role/component";
 import {ResourceQuotaListComponent} from "./quotas/component";
-//import {QuotasListComponent} from "./resourcelist/quota/component";
-import {NewNodeListComponent} from "./resourcelist/resourcemonitoring/component";
-
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -114,7 +111,6 @@ const components = [
   ActionbarComponent,
   AllocationChartComponent,
   ActionbarDetailTriggerComponent,
-  NewNodeListComponent,
   BreadcrumbsComponent,
   TenantPartitionListComponent,
 

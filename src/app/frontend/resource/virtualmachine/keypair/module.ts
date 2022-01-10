@@ -25,5 +25,4 @@ import {MatFormFieldModule} from '@angular/material/form-field';
   imports: [SharedModule, ComponentsModule, KeypairRoutingModule, MatExpansionModule, MatFormFieldModule],
   declarations: [KeypairListComponent],
 })
-export class KeypairModule {
-}
+export class KeypairModule {}

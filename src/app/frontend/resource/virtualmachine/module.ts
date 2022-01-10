@@ -22,9 +22,8 @@ import {VirtualmachineRoutingModule} from './routing';
 
 
 @NgModule({
-  imports: [SharedModule, ComponentsModule, VirtualmachineRoutingModule],
+  imports: [SharedModule, ComponentsModule,VirtualmachineRoutingModule],
   declarations: [VirtualmachineComponent],
 })
-export class VirtualmachineModule {
-}
+export class VirtualmachineModule {}
 

@@ -22,32 +22,28 @@ limitations under the License.
         <div class="create_btn_sec" align="right">
           <button mat-raised-button matTooltip="Add Node" color="primary" (click)="onClick()">
             <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
-            Add Node
-          </button>
+            Add Node</button>
         </div>
       </div>
     </div>
 
-    <div class="kd-card-group-header kd-muted"
-         [hidden]=""
-         i18n>Resource Partition
-    </div>
+        <div class="kd-card-group-header kd-muted"
+             [hidden]=""
+             i18n>Resource Partition</div>
 
 
-    <kd-card role="table"
-             [hidden]="isHidden()">
-      <div title
-           fxLayout="row"
-           i18n>Nodes
-      </div>
-      <div description><span class="kd-muted-light"
-                             i18n>Items:&nbsp;</span>{{totalItems}}
-      </div>
-      <div actions>
-        <kd-card-list-filter></kd-card-list-filter>
-      </div>
+        <kd-card role="table"
+                 [hidden]="isHidden()">
+          <div title
+               fxLayout="row"
+               i18n>Nodes</div>
+          <div description><span class="kd-muted-light"
+                                 i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          <div actions>
+            <kd-card-list-filter></kd-card-list-filter>
+          </div>
 
-      <div content
+          <div content
                [hidden]="showZeroState()">
             <div kdLoadingSpinner
                  [isLoading]="isLoading"></div>
@@ -149,17 +145,17 @@ limitations under the License.
               <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
             </mat-table>
 
-        <mat-paginator [length]="totalItems"
-                       [pageSize]="itemsPerPage"
-                       [hidePageSize]="true"
-                       [showFirstLastButtons]="true"></mat-paginator>
-      </div>
+            <mat-paginator [length]="totalItems"
+                           [pageSize]="itemsPerPage"
+                           [hidePageSize]="true"
+                           [showFirstLastButtons]="true"></mat-paginator>
+          </div>
 
-      <div content
-           [hidden]="!showZeroState()">
-        <kd-list-zero-state></kd-list-zero-state>
-      </div>
+          <div content
+               [hidden]="!showZeroState()">
+            <kd-list-zero-state></kd-list-zero-state>
+          </div>
 
-    </kd-card>
+        </kd-card>
 
   </div>

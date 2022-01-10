@@ -1,3 +1,4 @@
+
 import {NgModule} from '@angular/core';
 
 import {ComponentsModule} from '../../common/components/module';
@@ -12,5 +13,4 @@ import {ResourceQuotaDetailComponent} from './detail/component';
   imports: [SharedModule, ComponentsModule, ResourceQuotaRoutingModule],
   declarations: [ResourceQuotasListComponent, ResourceQuotaDetailComponent],
 })
-export class ResourceQuotaModule {
-}
+export class ResourceQuotaModule {}

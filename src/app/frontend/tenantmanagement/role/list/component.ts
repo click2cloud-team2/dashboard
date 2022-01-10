@@ -18,5 +18,4 @@ import {Component} from '@angular/core';
   selector: 'kd-role-list-state',
   template: '<kd-role-list></kd-role-list>',
 })
-export class RoleListComponent {
-}
+export class RoleListComponent {}

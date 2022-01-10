@@ -1,5 +1,5 @@
 
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
@@ -61,15 +61,12 @@ export class assignQuotaDialog implements OnInit {
   get quotanames(): AbstractControl {
     return this.form1.get('quotaname');
   }
-
   get tenants(): AbstractControl {
     return this.form1.get('tenant');
   }
-
   get namespaces(): AbstractControl {
     return this.form1.get('namespace');
   }
-
   get service(): AbstractControl {
     return this.form1.get('service');
   }
@@ -77,37 +74,31 @@ export class assignQuotaDialog implements OnInit {
   get memory(): AbstractControl {
     return this.form1.get('memory');
   }
-
   get cpus(): AbstractControl {
     return this.form1.get('cpu');
   }
-
   get pods(): AbstractControl {
     return this.form1.get('pod');
   }
-
   get pvc(): AbstractControl {
     return this.form1.get('pvc');
   }
-
-  get config_maps(): AbstractControl {
+get config_maps(): AbstractControl {
     return this.form1.get('config_maps');
   }
-
   get secrets(): AbstractControl {
     return this.form1.get('secrets');
   }
-
   get ephemeral_storage(): AbstractControl {
     return this.form1.get('ephemeral_storage');
   }
 
   // function for creating new Clusterrole
   createQuota(): void {
-    // alert(this.storage.value)
+   // alert(this.storage.value)
     if (!this.form1.valid) return;
-    const quotaSpec = {
-      name: this.quotanames.value,
+    const quotaSpec= {
+      name: this.quotanames.value ,
       tenant: this.tenants.value,
       name_space: this.namespaces.value,
       cpu: this.cpus.value,
@@ -123,7 +114,7 @@ export class assignQuotaDialog implements OnInit {
     const tokenPromise = this.csrfToken_.getTokenForAction('resourcequota');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
-        .post<{ valid: boolean }>(
+        .post<{valid: boolean}>(
           'api/v1/resourcequota',
           {...quotaSpec},
           {
@@ -153,6 +144,7 @@ export class assignQuotaDialog implements OnInit {
         );
     });
   }
+
 
 
   isDisabled(): boolean {

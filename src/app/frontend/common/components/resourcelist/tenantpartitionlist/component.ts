@@ -14,7 +14,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {Tenant, TenantList} from '@api/backendapi';
+import { Tenant, TenantList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 
 
@@ -24,24 +24,24 @@ import {ResourceService} from '../../../services/resource/resource';
 import {NotificationsService} from '../../../services/global/notifications';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {MenuComponent} from '../../list/column/menu/component';
-import {MatDialog, MatDialogConfig, MatExpansionModule} from '@angular/material/';
+import {MatDialog, MatDialogConfig,MatExpansionModule} from '@angular/material/';
 import {VerberService} from '../../../services/global/verber';
 
 @Component({
   selector: 'kd-tenant-partition-list',
   templateUrl: './template.html',
 })
-export class TenantPartitionListComponent extends ResourceListWithStatuses<TenantList, Tenant> {
+export class TenantPartitionListComponent extends ResourceListWithStatuses<TenantList, Tenant > {
   @Input() endpoint = EndpointManager.resource(Resource.tenant).list();
   // @Input() endpoint = EndpointManager.resource(Resource.tenant, true, true).list();
 
-  displayName: any = "";
-  typeMeta: any = "";
-  objectMeta: any;
-
+  displayName:any="";
+  typeMeta:any="";
+  objectMeta:any;
   constructor(
     private readonly verber_: VerberService,
     private readonly tenant_: ResourceService<TenantList>,
+
     notifications: NotificationsService,
     private dialog: MatDialog //add the code
   ) {
@@ -62,7 +62,7 @@ export class TenantPartitionListComponent extends ResourceListWithStatuses<Tenan
   }
 
   map(tenantList: TenantList): Tenant[] {
-    return tenantList.tenants;
+    return tenantList.tenants ;
   }
 
   isInErrorState(resource: Tenant): boolean {
@@ -78,7 +78,7 @@ export class TenantPartitionListComponent extends ResourceListWithStatuses<Tenan
   }
 
   getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'nodecount', 'cpulim', 'memlim', 'tentcount', 'health', 'etcd'];
+    return ['statusicon', 'name', 'nodecount','cpulim','memlim','tentcount','health','etcd'];
   }
 
   //added the code

@@ -42,5 +42,4 @@ const TENANT_DETAIL_ROUTE: Route = {
   imports: [RouterModule.forChild([TENANT_LIST_ROUTE, TENANT_DETAIL_ROUTE])],
   exports: [RouterModule],
 })
-export class TenantPartitionRoutingModule {
-}
+export class TenantPartitionRoutingModule {}

@@ -29,5 +29,4 @@ const PARTITION_DETAIL_ROUTE: Route = {
   imports: [RouterModule.forChild([PARTITION_LIST_ROUTE, PARTITION_DETAIL_ROUTE, DEFAULT_ACTIONBAR])],
   exports: [RouterModule],
 })
-export class PartitionRoutingModule {
-}
+export class PartitionRoutingModule {}

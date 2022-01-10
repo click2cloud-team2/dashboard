@@ -26,5 +26,4 @@ import {MatPaginatorModule} from '@angular/material/paginator';
   imports: [SharedModule, ComponentsModule, InstanceRoutingModule, MatExpansionModule, MatFormFieldModule, MatPaginatorModule],
   declarations: [InstanceListComponent],
 })
-export class InstanceModule {
-}
+export class InstanceModule {}

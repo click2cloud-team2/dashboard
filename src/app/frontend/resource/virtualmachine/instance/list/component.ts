@@ -32,150 +32,18 @@ export interface PeriodicElement {
 }
 
 const ELEMENT_DATA: PeriodicElement[] = [
-  {
-    name: 'Instance1',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.small',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '1 week, 5 days'
-  },
-  {
-    name: 'Instance2',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.tiny',
-    keypair: 'openstac-test-keypair',
-    status: 'Error',
-    zone: 'nova',
-    task: 'none',
-    state: 'No State',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance3',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.small',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '3 week, 5 days'
-  },
-  {
-    name: 'Instance4',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.medium',
-    keypair: 'openstac-test-keypair',
-    status: 'Shutoff',
-    zone: 'nova',
-    task: 'none',
-    state: 'Shut down',
-    time: '1 week, 5 days'
-  },
-  {
-    name: 'Instance5',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance6',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance7',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance8',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance9',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance10',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance11',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
-  {
-    name: 'Instance12',
-    image: 'DND-centos7',
-    ip: '192.168.199.3',
-    flavor: 'm1.large',
-    keypair: 'openstac-test-keypair',
-    status: 'Active',
-    zone: 'nova',
-    task: 'none',
-    state: 'Running',
-    time: '2 week, 5 days'
-  },
+  {name: 'Instance1', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.small', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '1 week, 5 days'},
+  {name: 'Instance2', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.tiny', keypair: 'openstac-test-keypair', status: 'Error', zone: 'nova', task: 'none', state: 'No State', time: '2 week, 5 days'},
+  {name: 'Instance3', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.small', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '3 week, 5 days'},
+  {name: 'Instance4', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.medium', keypair: 'openstac-test-keypair', status: 'Shutoff', zone: 'nova', task: 'none', state: 'Shut down', time: '1 week, 5 days'},
+  {name: 'Instance5', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance6', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance7', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance8', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance9', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance10', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance11', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
+  {name: 'Instance12', image: 'DND-centos7', ip: '192.168.199.3', flavor: 'm1.large', keypair: 'openstac-test-keypair', status: 'Active', zone: 'nova', task: 'none', state: 'Running', time: '2 week, 5 days'},
 ];
 
 @Component({
@@ -183,15 +51,15 @@ const ELEMENT_DATA: PeriodicElement[] = [
   templateUrl: './template.html',
 })
 
-export class InstanceListComponent implements OnInit {
+export class InstanceListComponent implements  OnInit{
 
   panelOpenState = false;
   displayedColumns: string[] = ['select', 'name', 'image', 'ip', 'flavor', 'keypair', 'status', 'zone', 'task', 'state', 'time', 'action'];
   // dataSource = ELEMENT_DATA;
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+  dataSource = new MatTableDataSource(ELEMENT_DATA);  
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   ngOnInit() {
     this.dataSource.paginator = this.paginator;

@@ -14,7 +14,7 @@
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ComponentFactoryResolver} from '@angular/core'
-import {Component, OnDestroy, OnInit, Input} from '@angular/core';
+import {Component, OnDestroy, OnInit,Input} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {
   Deployment,
@@ -46,7 +46,7 @@ import {MenuComponent} from "../../../../common/components/list/column/menu/comp
 })
 export class TenantDetailComponent implements OnInit, OnDestroy {
   private tenantSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.tenant, false, false);
+  private readonly endpoint_ = EndpointManager.resource(Resource.tenant,false,false);
   tenant: TenantDetail;
   isInitialized = false;
 
@@ -62,7 +62,7 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
     this.tenantSubscription_ = this.tenant_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .get(this.endpoint_.detail(), resourceName,resourceNamespace)
       .subscribe((d: TenantDetail) => {
         this.tenant = d;
         this.notifications_.pushErrors(d.errors);
@@ -70,19 +70,16 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
         this.isInitialized = true;
       });
   }
-
   ngOnDestroy(): void {
     this.tenantSubscription_.unsubscribe();
     this.actionbar_.onDetailsLeave.emit();
   }
 }
-
 export class NamespaceListComponent extends ResourceListWithStatuses<NamespaceList, Namespace> {
   @Input() endpoint = EndpointManager.resource(Resource.namespace, false, true).list();
-  displayName: any = "";
-  typeMeta: any = "";
-  objectMeta: any;
-
+  displayName:any="";
+  typeMeta:any="";
+  objectMeta:any;
   constructor(
     private readonly verber_: VerberService,
     private readonly namespace_: ResourceService<NamespaceList>,
@@ -123,7 +120,6 @@ export class NamespaceListComponent extends ResourceListWithStatuses<NamespaceLi
   getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'labels', 'phase', 'age'];
   }
-
   //added the code
   onClick(): void {
     this.verber_.showNamespaceCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added showNamespaceCreateDialog
@@ -235,7 +231,6 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   isInPendingState(resource: Pod): boolean {
     return resource.podStatus.status === 'Pending';
   }
-
   isInSuccessState(resource: Pod): boolean {
     return resource.podStatus.status === 'Succeeded' || resource.podStatus.status === 'Running';
   }

@@ -24,26 +24,14 @@ import {NotificationsService} from '../../../services/global/notifications';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {MenuComponent} from '../../list/column/menu/component';
 
-import {Namespace, NamespaceList} from '@api/backendapi';
-import {MatDialog, MatDialogConfig,MatExpansionModule} from '@angular/material/';
-import { CreateFromFormComponent } from 'create/from/form/component';
-import { CreatorCardComponent } from 'common/components/creator/component';
-import { CreateFromFileComponent } from 'create/from/file/component';
-import { Form } from '@angular/forms';
-import {MatMenuModule} from '@angular/material/menu';
-import {VerberService} from '../../../services/global/verber';
-
 @Component({
   selector: 'kd-users-list',
   templateUrl: './template.html',
 })
-//export class UserListComponent extends ResourceListWithStatuses<TenantList, Tenant> {
 export class UserListComponent extends ResourceListWithStatuses<UserList, User> {
 
-  //@Input() endpoint = EndpointManager.resource(Resource.tenant).list();
   @Input() endpoint = EndpointManager.resource(Resource.user).list();
   constructor(
-    //private readonly tenant_: ResourceService<TenantList>,
     private readonly user_: ResourceService<UserList>,
     notifications: NotificationsService,
 
@@ -76,6 +64,7 @@ export class UserListComponent extends ResourceListWithStatuses<UserList, User> 
   isInSuccessState(resource: User): boolean {
     return resource.phase === 'Active';
   }
+
   getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'phase', 'age'];
   }

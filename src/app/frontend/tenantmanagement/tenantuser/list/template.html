@@ -3,47 +3,53 @@
     <div class="create_btn_sec" align="end">
       <button mat-raised-button matTooltip="Add Tenant" color="primary" (click)="onClick()">
         <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
-        Create New User
+        Create User
       </button>
     </div>
   </div>
 </div>
 
-<div class="list_container list_container3">
+<div class="list_container list_container4">
   <mat-accordion>
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Images
+          Users
         </mat-panel-title>
         <mat-panel-description>
           <div class="panel_description">
             <span>Items: </span>
-            {{total_users}}
+            {{totalUsers}}
           </div>
         </mat-panel-description>
       </mat-expansion-panel-header>
 
       <mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
-
-        <!-- Owner Column -->
-        <ng-container matColumnDef="id">
-          <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
-        </ng-container>
-
-        <!-- Name Column -->
         <ng-container matColumnDef="username">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Username </mat-header-cell>
           <mat-cell *matCellDef="let element">
             {{element.username}}
           </mat-cell>
-        </ng-container>
+      </ng-container>
 
-        <!-- Type Column -->
         <ng-container matColumnDef="type">
           <mat-header-cell *matHeaderCellDef> Type </mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.type}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="tenantname">
+          <mat-header-cell *matHeaderCellDef> Tenant</mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.tenantname}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="phase">
+          <mat-header-cell *matHeaderCellDef> Phase</mat-header-cell>
+          <mat-cell *matCellDef="let element"> Active </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="age">
+          <mat-header-cell *matHeaderCellDef> Age</mat-header-cell>
+          <mat-cell *matCellDef="let element"> - </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

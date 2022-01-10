@@ -27,6 +27,8 @@ import {map} from 'rxjs/operators';
 import {AsKdError, K8SError} from '../common/errors/errors';
 import {AuthService} from '../common/services/global/authentication';
 
+import {UserInfo} from "./login.service"
+
 enum LoginModes {
   Kubeconfig = 'kubeconfig',
   Basic = 'basic',
@@ -50,6 +52,7 @@ export class LoginComponent implements OnInit {
   private username_: string;
   private password_: string;
   private responseData: any;
+  public storeUserData: string[];
 
   constructor(
     private readonly authService_: AuthService,
@@ -57,6 +60,7 @@ export class LoginComponent implements OnInit {
     private readonly http_: HttpClient,
     private readonly ngZone_: NgZone,
     private readonly route_: ActivatedRoute,
+    public userinfo_:UserInfo,
   ) {}
 
   ngOnInit(): void {
@@ -102,11 +106,17 @@ export class LoginComponent implements OnInit {
         this.ngZone_.run(() => {
           this.state_.navigate(['overview']);
         });
+
       },
       (err: HttpErrorResponse) => {
         this.errors = [AsKdError(err)];
-      },
+      }, 
     );
+    this.storeUserData = [
+      this.responseData.username,
+      this.responseData.type
+    ];
+    this.userinfo_.setdata(this.storeUserData);
   }
 
   skip(): void {

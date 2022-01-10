@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
-import {AbstractControl, Validators, FormBuilder} from '@angular/forms';
-import {FormGroup, FormControl} from '@angular/forms';
+import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
 import {AlertDialog, AlertDialogConfig} from "../alert/dialog";
@@ -45,7 +45,7 @@ export class CreateClusterroleDialog implements OnInit {
   name: string
   apigroup: string[]
   resource: string[]
-  verb: string[]
+  verb : string[]
 
   constructor(
     public dialogRef: MatDialogRef<CreateClusterroleDialog>,
@@ -54,8 +54,7 @@ export class CreateClusterroleDialog implements OnInit {
     private readonly csrfToken_: CsrfTokenService,
     private readonly matDialog_: MatDialog,
     private readonly fb_: FormBuilder,
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.form1 = this.fb_.group({
@@ -90,36 +89,27 @@ export class CreateClusterroleDialog implements OnInit {
   get clusterrole(): AbstractControl {
     return this.form1.get('clusterrole');
   }
-
   get apigroups(): AbstractControl {
     return this.form1.get('apigroups');
   }
-
   get verbs(): AbstractControl {
     return this.form1.get('verbs');
   }
-
   get resources(): AbstractControl {
     return this.form1.get('resources');
   }
-
   // function for creating new Clusterrole
   createclusterrole(): void {
     if (!this.form1.valid) return;
     this.apigroup = this.apigroups.value.split(',')
     this.resource = this.resources.value.split(',')
     this.verb = this.verbs.value.split(',')
-    const clusterroleSpec = {
-      name: this.clusterrole.value,
-      apiGroups: this.apigroup,
-      verbs: this.verb,
-      resources: this.resource
-    };
+    const clusterroleSpec= {name: this.clusterrole.value,apiGroups: this.apigroup,verbs: this.verb,resources: this.resource};
     const tokenPromise = this.csrfToken_.getTokenForAction('clusterrole');
     console.log(clusterroleSpec)
     tokenPromise.subscribe(csrfToken => {
       return this.http_
-        .post<{ valid: boolean }>(
+        .post<{valid: boolean}>(
           'api/v1/clusterrole',
           {...clusterroleSpec},
           {
@@ -153,7 +143,6 @@ export class CreateClusterroleDialog implements OnInit {
   isDisabled(): boolean {
     return this.data.name.indexOf(this.clusterrole.value) >= 0;
   }
-
   cancel(): void {
     this.dialogRef.close();
   }

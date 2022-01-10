@@ -16,11 +16,18 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/kubernetes/dashboard/src/app/backend/args"
+	"github.com/kubernetes/dashboard/src/app/backend/client"
+	rbac "k8s.io/api/rbac/v1"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+
+	_ "github.com/lib/pq" // postgres golang driver
 
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/api"
@@ -28,7 +35,7 @@ import (
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/iam/models"
+	"github.com/kubernetes/dashboard/src/app/backend/iam/model"
 	"github.com/kubernetes/dashboard/src/app/backend/integration"
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin"
@@ -58,6 +65,8 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/resourcequota"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/role"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/rolebinding"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/secret"
+	resourceService "github.com/kubernetes/dashboard/src/app/backend/resource/service"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/serviceaccount"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/statefulset"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/storageclass"
@@ -71,8 +80,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/remotecommand"
-
-	_ "github.com/lib/pq" // postgres golang driver
 )
 
 const (
@@ -88,12 +95,6 @@ type APIHandler struct {
 	iManager integration.IntegrationManager
 	cManager clientapi.ClientManager
 	sManager settingsApi.SettingsManager
-}
-
-// response format
-type response struct {
-	ID      int64  `json:"id,omitempty"`
-	Message string `json:"message,omitempty"`
 }
 
 // TerminalResponse is sent by handleExecShell. The Id is a random session id that binds the original REST request and the SockJS connection.
@@ -153,28 +154,6 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/tenants/{tenant}").
 			To(apiHandler.handleDeleteTenant))
-
-	apiV1Ws.Route(
-		apiV1Ws.POST("/users").
-			To(apiHandler.handleCreateUser).
-			Reads(models.User{}).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.GET("/users").
-			To(apiHandler.handleGetAllUser).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.GET("/users/{username}").
-			To(apiHandler.handleGetUser).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.PUT("/users/{userid}").
-			To(apiHandler.handleUpdateUser).
-			Writes(models.User{}))
-	apiV1Ws.Route(
-		apiV1Ws.DELETE("/users/{userid}").
-			To(apiHandler.handleDeleteUser).
-			Writes(models.User{}))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("csrftoken/{action}").
@@ -604,14 +583,6 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			Reads(ns.NamespaceSpec{}).
 			Writes(ns.NamespaceSpec{}))
 	apiV1Ws.Route(
-		apiV1Ws.POST("/tenant").
-			To(apiHandler.handleCreateTenant).
-			Reads(tenant.TenantSpec{}).
-			Writes(tenant.TenantSpec{}))
-	apiV1Ws.Route(
-		apiV1Ws.DELETE("/tenants/{tenant}").
-			To(apiHandler.handleDeleteTenant))
-	apiV1Ws.Route(
 		apiV1Ws.GET("/namespace").
 			To(apiHandler.handleGetNamespaces).
 			Writes(ns.NamespaceList{}))
@@ -665,8 +636,9 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.GET("/secret/{namespace}/{name}").
 			To(apiHandler.handleGetSecretDetail).
-			//Writes(secret.SecretDetail{}))
-			Writes(secret.MySecret{}))
+			// TODO		Writes(secret.SecretDetail{}))
+			Writes(secret.SecretDetailSpec{}))
+
 	apiV1Ws.Route(
 		apiV1Ws.POST("/secret").
 			To(apiHandler.handleCreateImagePullSecret).
@@ -863,6 +835,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 	apiV1Ws.Route(
 		apiV1Ws.PUT("/tenants/{tenant}/_raw/{kind}/namespace/{namespace}/name/{name}").
 			To(apiHandler.handlePutResourceWithMultiTenancy))
+
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/_raw/{kind}/name/{name}").
 			To(apiHandler.handleDeleteResource))
@@ -910,14 +883,14 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 			Writes(clusterrole.ClusterRoleDetail{}))
 	apiV1Ws.Route(
 		apiV1Ws.POST("/clusterrole").
-			To(apiHandler.handleCreateClusterRole).
+			To(apiHandler.handleCreateCreateClusterRole).
 			Reads(clusterrole.ClusterRoleSpec{}).
 			Writes(clusterrole.ClusterRoleSpec{}))
 
 	// ClusterRole with Multi Tenancy.
 	apiV1Ws.Route(
 		apiV1Ws.POST("/clusterroles").
-			To(apiHandler.handleCreateClusterRolesWithMultiTenancy).
+			To(apiHandler.handleCreateCreateClusterRolesWithMultiTenancy).
 			Reads(clusterrole.ClusterRoleSpec{}).
 			Writes(clusterrole.ClusterRoleSpec{}))
 
@@ -1182,6 +1155,28 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, cManager clie
 		apiV1Ws.GET("/tenants/{tenant}/log/file/{namespace}/{pod}/{container}").
 			To(apiHandler.handleLogFileWithMultiTenancy).
 			Writes(logs.LogDetails{}))
+	// IAM User related routes
+	apiV1Ws.Route(
+		apiV1Ws.POST("/users").
+			To(apiHandler.CreateUser).
+			Reads(model.User{}).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/users").
+			To(apiHandler.GetAllUser).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/tenantusers/{tenantname}").
+			To(apiHandler.GetAllTenantUsers).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/users/{username}").
+			To(apiHandler.GetUser).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/users/{userid}").
+			To(apiHandler.handleDeleteUser).
+			Writes(model.User{}))
 
 	return wsContainer, nil
 }
@@ -1229,8 +1224,8 @@ func (apiHandler *APIHandler) handleGetTenantList(request *restful.Request, resp
 		return
 	}
 
-	dataselect := parseDataSelectPathParameter(request)
-	result, err := tenant.GetTenantList(k8sClient, dataselect)
+	dataSelect := parseDataSelectPathParameter(request)
+	result, err := tenant.GetTenantList(k8sClient, dataSelect)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -2878,7 +2873,7 @@ func (apiHandler *APIHandler) handleGetReplicationControllerPodsWithMultiTenancy
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
-func (apiHandler *APIHandler) handleCreateClusterRole(request *restful.Request, response *restful.Response) {
+func (apiHandler *APIHandler) handleCreateCreateClusterRole(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
@@ -2898,7 +2893,7 @@ func (apiHandler *APIHandler) handleCreateClusterRole(request *restful.Request, 
 	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
 }
 
-func (apiHandler *APIHandler) handleCreateClusterRolesWithMultiTenancy(request *restful.Request, response *restful.Response) {
+func (apiHandler *APIHandler) handleCreateCreateClusterRolesWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
@@ -3254,135 +3249,6 @@ func (apiHandler *APIHandler) handleDeleteResourceQuota(request *restful.Request
 	}
 	response.WriteHeader(http.StatusOK)
 }
-func (apiHandler *APIHandler) handleCreateClusterRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	clusterRoleSpec := new(clusterrole.ClusterRoleSpec)
-	if err := request.ReadEntity(clusterRoleSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
-}
-
-func (apiHandler *APIHandler) handleGetRoles(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	Namespace := request.PathParameter("namespace")
-	var namespaces []string
-	namespaces = append(namespaces, Namespace)
-	namespace := common.NewNamespaceQuery(namespaces)
-	dataSelect := parseDataSelectPathParameter(request)
-
-	result, err := role.GetRoleList(k8sClient, namespace, dataSelect)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
-func (apiHandler *APIHandler) handleCreateRoleBinding(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	roleBindingSpec := new(rolebinding.RoleBindingSpec)
-	if err := request.ReadEntity(roleBindingSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := rolebinding.CreateRoleBinding(roleBindingSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, roleBindingSpec)
-}
-
-func (apiHandler *APIHandler) handleCreateClusterRoleBinding(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	clusterRoleBindingSpec := new(clusterrolebinding.ClusterRoleBindingSpec)
-	if err := request.ReadEntity(clusterRoleBindingSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := clusterrolebinding.CreateClusterRoleBinding(clusterRoleBindingSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleBindingSpec)
-}
-
-func (apiHandler *APIHandler) handleGetRoleDetail(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	name := request.PathParameter("name")
-	namespace := request.PathParameter("namespace")
-	result, err := role.GetRoleDetail(k8sClient, namespace, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
-
-func (apiHandler *APIHandler) handleCreateRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	roleSpec := new(role.RoleSpec)
-	if err := request.ReadEntity(roleSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := role.CreateRole(roleSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, roleSpec)
-}
-
-func (apiHandler *APIHandler) handleDeleteRole(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	roleName := request.PathParameter("role")
-	namespaceName := request.PathParameter("namespace")
-	if err := role.DeleteRole(namespaceName, roleName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
-
 func (apiHandler *APIHandler) handleCreateNamespace(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.cManager.Client(request)
 	if err != nil {
@@ -3547,113 +3413,6 @@ func (apiHandler *APIHandler) handleDeleteServiceAccountsWithMultiTenancy(reques
 	tenantName := request.PathParameter("tenant")
 	namespaceName := request.PathParameter("namespace")
 	if err := serviceaccount.DeleteServiceAccountsWithMultiTenancy(tenantName, namespaceName, serviceaccountName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
-
-func (apiHandler *APIHandler) handleCreateTenant(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	tenantSpec := new(tenant.TenantSpec)
-	if err := request.ReadEntity(tenantSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := tenant.CreateTenant(tenantSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, tenantSpec)
-}
-
-func (apiHandler *APIHandler) handleDeleteTenant(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	tenantName := request.PathParameter("tenant")
-	if err := tenant.DeleteTenant(tenantName, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeader(http.StatusOK)
-}
-
-func (apiHandler *APIHandler) handleGetServiceAccounts(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	Namespace := request.PathParameter("namespace")
-	var namespaces []string
-	namespaces = append(namespaces, Namespace)
-	namespace := common.NewNamespaceQuery(namespaces)
-	dataSelect := parseDataSelectPathParameter(request)
-
-	result, err := serviceaccount.GetServiceAccountList(k8sClient, namespace, dataSelect)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
-
-func (apiHandler *APIHandler) handleGetServiceAccountDetail(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	name := request.PathParameter("name")
-	namespace := request.PathParameter("namespace")
-	result, err := serviceaccount.GetServiceAccountDetail(k8sClient, namespace, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
-
-func (apiHandler *APIHandler) handleCreateServiceAccount(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
-	if err := request.ReadEntity(serviceaccountSpec); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	if err := serviceaccount.CreateServiceAccount(serviceaccountSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusCreated, serviceaccountSpec)
-}
-
-func (apiHandler *APIHandler) handleDeleteServiceAccount(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.cManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	serviceaccountName := request.PathParameter("serviceaccount")
-	namespaceName := request.PathParameter("namespace")
-	if err := serviceaccount.DeleteServiceAccount(namespaceName, serviceaccountName, k8sClient); err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
@@ -5281,19 +5040,61 @@ func parseDataSelectPathParameter(request *restful.Request) *dataselect.DataSele
 	return dataselect.NewDataSelectQuery(paginationQuery, sortQuery, filterQuery, metricQuery)
 }
 
+// IAM Service related functions
+
+// response format
+type response struct {
+	ID      int64  `json:"id,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// create connection with postgres db
+func CreateConnection() *sql.DB {
+
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_PORT := os.Getenv("DB_PORT")
+	POSTGRES_USER := os.Getenv("POSTGRES_USER")
+	POSTGRES_PASSWORD := os.Getenv("POSTGRES_PASSWORD")
+	POSTGRES_DB := os.Getenv("POSTGRES_DB")
+
+	// Open the connection
+	connStr := "host=" + DB_HOST + " port=" + DB_PORT + " dbname=" + POSTGRES_DB + " user=" + POSTGRES_USER + " password=" + POSTGRES_PASSWORD + " sslmode=disable"
+	//connStr := "host=192.168.1.243 port=5434 dbname=postgres user=postgres password=sonu123 sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// check the connection
+	err = db.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected!")
+	// return the connection
+	return db
+}
+
 // CreateUser create a user in the postgres db
-func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) CreateUser(w *restful.Request, r *restful.Response) {
+	// set the header to content type x-www-form-urlencoded
+	// Allow all origin to handle cors issue
 
-	// create an empty user of type models.User
-	var user models.User
+	// create an empty user of type model.User
+	var user model.User
 
+	// decode the json request to user
+	//err := json.NewDecoder(w.ReadEntity(&user))
 	err := w.ReadEntity(&user)
 	if err != nil {
 		log.Fatalf("Unable to decode the request body.  %v", err)
 	}
 
 	// call insert user function and pass the user
-	insertID := models.InsertUser(user)
+	insertID := insertUser(user)
 
 	// format a response object
 	res := response{
@@ -5302,17 +5103,16 @@ func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Re
 	}
 
 	// send the response
-	r.WriteHeaderAndEntity(http.StatusCreated, res)
+	d := r.ResponseWriter
+	d.Write([]byte(res.Message))
 }
 
-// GetUser will return a single user by its id
-func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetUser(w *restful.Request, r *restful.Response) {
 	// get the userid from the request params, key is "id"
 	username := w.PathParameter("username")
 
 	// call the getUser function with user id to retrieve a single user
-	//id_, err := strconv.Atoi(id)
-	user, err := models.GetUser(username)
+	user, err := getUser(username)
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
@@ -5322,9 +5122,9 @@ func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Respo
 }
 
 // GetAllUser will return all the users
-func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Response) {
+func (apiHandler *APIHandler) GetAllUser(w *restful.Request, r *restful.Response) {
 	// get all the users in the db
-	users, err := models.GetAllUsers()
+	users, err := getAllUsers()
 
 	if err != nil {
 		log.Fatalf("Unable to get all user. %v", err)
@@ -5334,35 +5134,39 @@ func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, users)
 }
 
-// handleUpdateUser update user's detail in the postgres db
-func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Response) {
+// GetAllTenantUser will return all the users
+func (apiHandler *APIHandler) GetAllTenantUsers(w *restful.Request, r *restful.Response) {
+	// get all the users in the db
+	tenantname := w.PathParameter("tenantname")
+
+	users, err := getTenantUsers(tenantname)
+
+	if err != nil {
+		log.Fatalf("Unable to get all user. %v", err)
+	}
+
+	// send all the users as response
+	r.WriteHeaderAndEntity(http.StatusOK, users)
+}
+
+func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
 
 	// get the userid from the request params, key is "userid"
-	// convert the id type from string to int
+
 	userid := w.PathParameter("userid")
+
+	// call the deleteUser, convert the int to int64
 	id, err := strconv.Atoi(userid)
-
-	if err != nil {
-		log.Fatalf("Unable to convert the string into int.  %v", err)
-	}
-	// create an empty user of type models.User
-	var user models.User
-	error := w.ReadEntity(&user)
-	if err != nil {
-		log.Fatalf("Unable to decode the request body.  %v", error)
-	}
-
-	// call update user function to update the user
-	updatedRows := models.UpdateUser(int64(id), user)
+	deletedRows := deleteUser(int64(id))
 
 	if err != nil {
 		log.Fatalf("Unable to get user. %v", err)
 	}
 
 	// format the message string
-	msg := fmt.Sprintf("User updated successfully. Total rows/record affected %v", updatedRows)
+	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
 
-	// format the response message
+	// format the reponse message
 	res := response{
 		ID:      int64(id),
 		Message: msg,
@@ -5372,30 +5176,293 @@ func (apiHandler *APIHandler) handleUpdateUser(w *restful.Request, r *restful.Re
 	r.WriteHeaderAndEntity(http.StatusOK, res)
 }
 
-// DeleteUser delete user's detail in the postgres db
-func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
+//------------------------- handler functions ----------------
+// insert one user in the DB
 
-	// get the userid from the request params, key is "userid"
+func insertUser(user model.User) int64 {
 
-	userid := w.PathParameter("userid")
+	// create the postgres db connection
 
-	// call the deleteUser, convert the int to int64
-	id, err := strconv.Atoi(userid)
-	deletedRows := models.DeleteUser(int64(id))
+	db := CreateConnection()
+	//fmt.Printf("fetched token \n"+user_token)
+	// close the db connection
+	defer db.Close()
+
+	// create the insert sql query
+	// returning userid will return the id of the inserted user
+	sqlStatement := `INSERT INTO users (username, password, token, type,tenantname) VALUES ($1, $2, $3, $4, $5) RETURNING userid`
+	// the inserted id will store in this id
+	var id int64
+
+	// execute the sql statement
+	// Scan function will save the insert id in the id
+	err := db.QueryRow(sqlStatement, user.Username, user.Password, user.Token, user.Type, user.Tenant).Scan(&id)
 
 	if err != nil {
-		log.Fatalf("Unable to get user. %v", err)
+		log.Fatalf("Unable to execute the query. %v", err)
 	}
 
-	// format the message string
-	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
+	fmt.Printf("Inserted a single record %v \n", id)
+	// return the inserted id
+	return id
+}
 
-	// format the response message
-	res := response{
-		ID:      int64(id),
-		Message: msg,
+// get one user from the DB by its userid
+func getUser(param string) (model.User, error) {
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create a user of model.User type
+	var user model.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users WHERE username=$1`
+
+	// execute the sql statement
+	row := db.QueryRow(sqlStatement, param)
+
+	// unmarshal the row object to user
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
+
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return user, nil
+	case nil:
+		return user, nil
+	default:
+		log.Fatalf("Unable to scan the row. %v", err)
 	}
 
-	// send the response
-	r.WriteHeaderAndEntity(http.StatusOK, res)
+	// return empty user on error
+	return user, err
+}
+
+// get one user from the DB by its userid
+func getTenantUsers(tenantname string) ([]model.User, error) {
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var users []model.User
+
+	// create the select sql query
+	//sqlStatement := `SELECT * FROM users WHERE type=$1`
+	sqlStatement := `SELECT * FROM users WHERE tenantname =$1`
+
+	// execute the sql statement
+	rows, err := db.Query(sqlStatement,tenantname)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var user model.User
+
+		// unmarshal the row object to user
+		//err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type)
+		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+
+		// append the user in the users slice
+		users = append(users, user)
+
+	}
+
+	// return empty user on error
+	return users, err
+}
+
+// get one user from the DB by its userid
+func getAllUsers() ([]model.User, error) {
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var users []model.User
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM users`
+
+	// execute the sql statement
+	rows, err := db.Query(sqlStatement)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var user model.User
+
+		// unmarshal the row object to user
+		err = rows.Scan(&user.ID, &user.Username, &user.Password, &user.Token, &user.Type, &user.Tenant)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+
+		// append the user in the users slice
+		users = append(users, user)
+
+	}
+
+	// return empty user on error
+	return users, err
+}
+
+func deleteUser(id int64) int64 {
+
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create the delete sql query
+	sqlStatement := `DELETE FROM users WHERE userid=$1`
+
+	// execute the sql statement
+	res, err := db.Exec(sqlStatement, id)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// check how many rows affected
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		log.Fatalf("Error while checking the affected rows. %v", err)
+	}
+
+	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+	return rowsAffected
+}
+
+func CreateClusterAdmin() error {
+	const adminName = "centaurus"
+	const dashboardNS = "kubernetes-dashboard"
+	const clsterroleName = "cluster-admin"
+	const saName = adminName + "-dashboard-sa"
+	admin := os.Getenv("CLUSTER_ADMIN")
+	if admin == "" {
+		admin = adminName
+	}
+	clientManager := client.NewClientManager(args.Holder.GetKubeConfigFile(), args.Holder.GetApiServerHost())
+
+	// TODO Check if kubernetes-dashboard namespace exists or not using GET method
+	k8sClient := clientManager.InsecureClient()
+
+	// Create namespace
+	namespaceSpec := new(ns.NamespaceSpec)
+	namespaceSpec.Name = dashboardNS
+	if err := ns.CreateNamespace(namespaceSpec, k8sClient); err != nil {
+		log.Printf("Create namespace for admin user failed, err:%s ", err.Error())
+		//return err
+	} else {
+		log.Printf("Create Namespace successfully")
+	}
+
+	// Create SA
+	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
+	serviceaccountSpec.Name = saName
+	serviceaccountSpec.Namespace = dashboardNS
+	if err := serviceaccount.CreateServiceAccount(serviceaccountSpec, k8sClient); err != nil {
+		log.Printf("Create service account for admin user failed, err:%s ", err.Error())
+		return err
+	}
+
+	// Create Cluster Role
+	//var verbs []string
+	//var apiGroups []string
+	//var resources []string
+	//verbs = append(verbs, "*")
+	//apiGroups = append(apiGroups, "", "extensions", "apps")
+	//resources = append(resources, "deployments", "pods", "services", "secrets", "namespaces")
+
+	//clusterRoleSpec := &clusterrole.ClusterRoleSpec{
+	//	Name:      roleName,
+	//	Verbs:     verbs,
+	//	APIGroups: apiGroups,
+	//	Resources: resources,
+	//}
+	//
+	//if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
+	//	log.Printf("Create cluster role for admin user failed, err:%s ", err.Error())
+	//	return err
+	//}
+
+	// Create CRB
+	clusterRoleBindingSpec := &clusterrolebinding.ClusterRoleBindingSpec{
+		Name: "admin-cluster-role-binding",
+		Subject: rbac.Subject{
+			Kind:      "ServiceAccount",
+			APIGroup:  "",
+			Name:      saName,
+			Namespace: dashboardNS,
+		},
+		RoleRef: rbac.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     clsterroleName,
+		},
+	}
+	if err := clusterrolebinding.CreateClusterRoleBindings(clusterRoleBindingSpec, k8sClient); err != nil {
+		log.Printf("Create cluster role for admin user failed, err:%s ", err.Error())
+		return err
+	}
+
+	// Get Token
+	secretList, err := k8sClient.CoreV1().SecretsWithMultiTenancy(dashboardNS, "").List(api.ListEverything)
+	if err != nil {
+		log.Printf("Create cluster role for admin user failed, err:%s \n", err.Error())
+		return err
+	}
+	var token []byte
+	for _, secret := range secretList.Items {
+		checkName := strings.Contains(secret.Name, saName)
+		if secret.Namespace == dashboardNS && checkName {
+			token = secret.Data["token"]
+			break
+		}
+	}
+
+	// Create User and enter data into DB
+	user := model.User{
+		ID:       0,
+		Username: admin,
+		Password: "Centaurus@123",
+		Token:    string(token),
+		Type:     "ClusterAdmin",
+	}
+
+	if err != nil {
+		log.Fatalf("Unable to decode the request body.  %v", err)
+	}
+
+	// call insertUser function and pass the user
+	insertID := insertUser(user)
+
+	log.Printf("\n User Id: %d", insertID)
+	return nil
 }

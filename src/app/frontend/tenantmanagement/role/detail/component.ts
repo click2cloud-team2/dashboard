@@ -39,8 +39,7 @@ export class RoleDetailComponent implements OnInit, OnDestroy {
     private readonly actionbar_: ActionbarService,
     private readonly route_: ActivatedRoute,
     private readonly notifications_: NotificationsService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     const resourceName = this.route_.snapshot.params.resourceName;

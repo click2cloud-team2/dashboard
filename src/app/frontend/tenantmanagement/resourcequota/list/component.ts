@@ -1,3 +1,4 @@
+
 import {Component, OnInit} from '@angular/core';
 
 @Component({
@@ -5,9 +6,7 @@ import {Component, OnInit} from '@angular/core';
   template: '<kd-resourcequota-list></kd-resourcequota-list>',
 })
 export class ResourceQuotasListComponent implements OnInit {
-  constructor() {
-  }
+  constructor() {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 }

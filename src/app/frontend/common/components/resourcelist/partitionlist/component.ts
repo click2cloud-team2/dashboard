@@ -1,3 +1,4 @@
+
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {Node, NodeList} from '@api/backendapi';
@@ -16,10 +17,9 @@ import {VerberService} from "../../../services/global/verber";
 })
 export class PartitionListComponent extends ResourceListWithStatuses<NodeList, Node> {
   @Input() endpoint = EndpointManager.resource(Resource.node).list();
-  displayName: any = "";
-  typeMeta: any = "";
-  objectMeta: any;
-
+  displayName:any="";
+  typeMeta:any="";
+  objectMeta:any;
   constructor(
     private readonly verber_: VerberService,
     private readonly node_: ResourceService<NodeList>,
@@ -58,11 +58,11 @@ export class PartitionListComponent extends ResourceListWithStatuses<NodeList, N
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'nodecount', 'cpulim', 'memlim', 'health', 'etcd'];
+    return ['statusicon', 'name', 'nodecount','cpulim','memlim','health','etcd'];
   }
 
   getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'nodecount', 'cpulim', 'memlim', 'tentcount', 'health', 'etcd'];
+    return ['statusicon', 'name', 'nodecount','cpulim','memlim','tentcount','health','etcd'];
   }
 
   //added the code

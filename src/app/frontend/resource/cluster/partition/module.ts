@@ -11,5 +11,4 @@ import {PartitionRoutingModule} from './routing';
   imports: [SharedModule, ComponentsModule, PartitionRoutingModule],
   declarations: [PartitionListComponent, PartitionDetailComponent],
 })
-export class PartitionModule {
-}
+export class PartitionModule {}

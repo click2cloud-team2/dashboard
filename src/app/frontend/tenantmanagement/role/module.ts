@@ -25,5 +25,4 @@ import {RoleRoutingModule} from './routing';
   imports: [SharedModule, ComponentsModule, RoleRoutingModule],
   declarations: [RoleListComponent, RoleDetailComponent],
 })
-export class RoleModule {
-}
+export class RoleModule {}

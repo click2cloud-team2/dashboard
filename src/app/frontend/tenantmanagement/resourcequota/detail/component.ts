@@ -1,4 +1,5 @@
-import {Component, OnDestroy, OnInit, Input} from '@angular/core';
+
+import {Component, OnDestroy, OnInit,Input} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ResourceQuotaDetail} from '@api/backendapi';
 import {ActionbarService, ResourceMeta} from '../../../common/services/global/actionbar';
@@ -13,7 +14,7 @@ import {NamespacedResourceService} from "../../../common/services/resource/resou
 })
 export class ResourceQuotaDetailComponent implements OnInit, OnDestroy {
   private resourcequotaSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.resourcequota, false, false);
+  private readonly endpoint_ = EndpointManager.resource(Resource.resourcequota,false, false);
   resourcequota: ResourceQuotaDetail;
   isInitialized = false;
 
@@ -22,15 +23,14 @@ export class ResourceQuotaDetailComponent implements OnInit, OnDestroy {
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
     private readonly notifications_: NotificationsService,
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
     alert(resourceNamespace);
     this.resourcequotaSubscription_ = this.resourcequota_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .get(this.endpoint_.detail(), resourceName,resourceNamespace)
       .subscribe((d: ResourceQuotaDetail) => {
         this.resourcequota = d;
         this.notifications_.pushErrors(d.errors);
@@ -38,7 +38,6 @@ export class ResourceQuotaDetailComponent implements OnInit, OnDestroy {
         this.isInitialized = true;
       });
   }
-
   ngOnDestroy(): void {
     this.resourcequotaSubscription_.unsubscribe();
     this.actionbar_.onDetailsLeave.emit();

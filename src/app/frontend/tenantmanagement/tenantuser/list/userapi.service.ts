@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core'
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { result } from 'lodash'
 import {CsrfTokenService} from "../../../common/services/global/csrftoken";
 import {CONFIG} from "../../../index.config";
 
@@ -10,6 +9,7 @@ export interface DashboardUser {
   password: string;
   token: string;
   type: string;
+  tenantname:string;
 }
 
 @Injectable({
@@ -25,9 +25,24 @@ export class UserApi {
     private readonly csrfToken_: CsrfTokenService,
   ){}
 
-  allUsers()
+  allUsers(userinfo:any[])
   {
-    return this.http.get<DashboardUser[]>("/api/v1/users")
+    var url:string;
+    var currentUser:string=userinfo[0];
+    var currentUserType:string=userinfo[1];
+
+    if(currentUserType.localeCompare("ClusterAdmin")==0)
+    {
+      url="/api/v1/users"
+    }
+
+    if(currentUserType.localeCompare("TenantAdmin")==0)
+    {
+      url="/api/v1/tenantusers/"+userinfo[0]
+    }
+
+    return this.http.get<DashboardUser[]>(url)
+
   }
 
   deleteUser(userID:string) {
@@ -169,6 +184,5 @@ export class UserApi {
 
     //call deleteUser fun now
     console.log("user id to be deleted"+id)
-    //this.deleteUser(id)
   }
 }

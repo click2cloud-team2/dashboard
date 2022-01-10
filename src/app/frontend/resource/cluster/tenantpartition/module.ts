@@ -26,5 +26,4 @@ import {TenantPartitionDetailComponent} from './detail/component';
   imports: [SharedModule, ComponentsModule, TenantPartitionRoutingModule],
   declarations: [TenantPartitionListComponent, TenantPartitionDetailComponent],
 })
-export class TenantPartitionModule {
-}
+export class TenantPartitionModule {}

@@ -26,5 +26,4 @@ import {NamespaceRoutingModule} from './routing';
   imports: [SharedModule, ComponentsModule, NamespaceRoutingModule],
   declarations: [NamespaceListComponent, NamespaceDetailComponent, ActionbarComponent],
 })
-export class NamespaceModule {
-}
+export class NamespaceModule {}

@@ -25,5 +25,4 @@ import {MatFormFieldModule} from '@angular/material/form-field';
   imports: [SharedModule, ComponentsModule, ImageRoutingModule, MatExpansionModule, MatFormFieldModule],
   declarations: [ImageListComponent],
 })
-export class ImageModule {
-}
+export class ImageModule {}
